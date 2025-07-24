@@ -1,0 +1,289 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  /* Responsive text sizing */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
+  /* Dark mode base */
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
+  }
+  
+  .dark .card {
+    @apply bg-gray-800 border-gray-700 text-gray-100;
+  }
+  
+  .dark .sidebar-responsive {
+    @apply bg-gray-950 text-gray-100;
+  }
+  
+  .dark .sidebar-nav-item {
+    @apply text-gray-300 hover:bg-gray-800 hover:text-white;
+  }
+  
+  .dark .sidebar-nav-item[aria-current="page"],
+  .dark .sidebar-nav-item.active {
+    @apply bg-gray-800 text-white;
+  }
+  
+  .dark .table-responsive {
+    @apply bg-gray-900 text-gray-100;
+  }
+  
+  .dark .input-field {
+    @apply bg-gray-900 border-gray-700 text-gray-100;
+  }
+  
+  .dark .btn-primary {
+    @apply bg-primary-700 hover:bg-primary-800 text-white;
+  }
+  
+  .dark .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-100;
+  }
+  
+  .dark .btn-danger {
+    @apply bg-red-700 hover:bg-red-800 text-white;
+  }
+  
+  .dark .welcome-card {
+    @apply bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700 text-gray-100;
+  }
+  
+  .dark .profile-avatar {
+    @apply border-gray-700;
+  }
+  
+  /* Remove overly aggressive overrides */
+  /* .dark .border-gray-200 {
+    @apply border-gray-700;
+  } */
+  
+  /* .dark .bg-white {
+    @apply bg-gray-900 !important;
+  } */
+  
+  /* .dark .text-gray-900 {
+    @apply text-gray-100 !important;
+  } */
+  
+  .dark .text-gray-600 {
+    @apply text-gray-400;
+  }
+  
+  .dark .text-gray-500 {
+    @apply text-gray-400;
+  }
+  
+  .dark .shadow,
+  .dark .shadow-md,
+  .dark .shadow-lg {
+    @apply shadow-none;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    text-decoration: none;
+    transition: background 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  @media (min-width: 640px) {
+    .btn-primary {
+      padding: 10px 24px;
+      font-size: 1rem;
+    }
+  }
+  
+  .btn-primary:hover {
+    background: #1d4ed8;
+  }
+  .btn-primary svg {
+    margin-right: 8px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md border border-gray-200;
+  }
+  
+  /* Responsive sidebar */
+  .sidebar-responsive {
+    @apply w-full h-full flex flex-col bg-gray-800;
+  }
+  
+  .sidebar-nav-item {
+    @apply group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+  
+  .sidebar-nav-item-mobile {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .sidebar-nav-item-desktop {
+    @apply text-sm lg:text-base;
+  }
+  
+  .sidebar-icon {
+    @apply flex-shrink-0 mr-2 sm:mr-3;
+  }
+  
+  .sidebar-icon-mobile {
+    @apply h-4 w-4 sm:h-5 sm:w-5;
+  }
+  
+  .sidebar-icon-desktop {
+    @apply lg:h-6 lg:w-6;
+  }
+  
+  /* Sidebar width utilities */
+  .sidebar-width-sm {
+    @apply w-52;
+  }
+  
+  .sidebar-width-md {
+    @apply w-56;
+  }
+  
+  .sidebar-width-lg {
+    @apply w-64;
+  }
+  
+  .sidebar-width-xl {
+    @apply w-72;
+  }
+  
+  /* Welcome card responsive utilities */
+  .welcome-card {
+    @apply bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm border border-blue-200;
+  }
+  
+  .welcome-card-mobile {
+    @apply p-4;
+  }
+  
+  .welcome-card-desktop {
+    @apply p-6;
+  }
+  
+  .welcome-profile-mobile {
+    @apply h-16 w-16;
+  }
+  
+  .welcome-profile-tablet {
+    @apply h-14 w-14;
+  }
+  
+  .welcome-profile-desktop {
+    @apply h-16 w-16;
+  }
+  
+  .welcome-title-mobile {
+    @apply text-xl font-bold text-gray-900;
+  }
+  
+  .welcome-title-tablet {
+    @apply text-lg font-bold text-gray-900 truncate;
+  }
+  
+  .welcome-title-desktop {
+    @apply text-2xl font-bold text-gray-900;
+  }
+  
+  .welcome-badge-mobile {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  
+  .welcome-badge-tablet {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  
+  .welcome-badge-desktop {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200;
+  }
+
+  /* Avatar image utility - removed background and shadow for navbar */
+  .profile-avatar {
+    @apply rounded-full object-cover border-2 border-white aspect-square;
+  }
+  
+  /* Responsive table */
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+  
+  .table-responsive table {
+    @apply min-w-full;
+  }
+  
+  /* Responsive grid utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  /* Mobile-first spacing */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .spacing-responsive {
+    @apply space-y-4 sm:space-y-6;
+  }
+  
+  /* Responsive text */
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-responsive-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
+}

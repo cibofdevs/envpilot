@@ -1,0 +1,23 @@
+# Maven build output
+/target/
+
+# IntelliJ IDEA project files
+/.idea/
+
+# MacOS system files
+.DS_Store
+
+# Log files
+app.log
+envpilot.log
+
+# Uploaded files
+/uploads/
+
+# Ignore shell history and pid files
+*.pid
+*.log
+
+jenkins-deploy.sh
+
+# End of .gitignore 

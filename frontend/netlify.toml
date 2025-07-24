@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[context.production.environment]
+  NODE_VERSION = "18"
+  REACT_APP_API_URL = "http://145.223.21.26//api"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

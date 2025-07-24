@@ -1,0 +1,125 @@
+spring:
+  application:
+    name: env-pilot
+  banner:
+    charset: UTF-8
+    location: classpath:banner.txt
+    mode: console
+  config:
+    import: vault://
+  cloud:
+    vault:
+      uri: ${VAULT_URL}
+      token: ${VAULT_TOKEN}
+      kv:
+        enabled: true
+        backend: envpilot
+        default-context: envpilot
+        profile-separator: '/'
+      fail-fast: true
+      connection-timeout: 5000
+      read-timeout: 15000
+  datasource:
+    url: jdbc:postgresql://145.223.21.26:5432/envpilot
+    username: ${database.username}
+    password: ${database.password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+      keepalive-time: 30000
+      register-mbeans: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 16
+        enable_lazy_load_no_trans: false
+  security:
+    user:
+      name: admin
+      password: admin123
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${email.username}
+    password: ${email.password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 10000
+          connectiontimeout: 10000
+          writetimeout: 10000
+        transport:
+          protocol: smtp
+        mime:
+          charset: UTF-8
+        default:
+          encoding: UTF-8
+        debug: false
+
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    max-connections: 8192
+    accept-count: 100
+    connection-timeout: 60000
+    processor-cache: 200
+    max-http-form-post-size: 2MB
+    max-swallow-size: 2MB
+    keep-alive-timeout: 60000
+    max-keep-alive-requests: 100
+
+jwt:
+  secret: ${jwt.secret}
+  expiration: 86400000 # 24 hours
+
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+  level:
+    org.springframework.vault: INFO
+    org.springframework.cloud.vault: INFO
+    org.springframework.cloud.vault.config: INFO
+    org.springframework.web.client.RestTemplate: INFO
+    org.springframework.http.client: INFO
+    com.cibofdevs.envpilot: INFO
+    com.zaxxer.hikari: DEBUG
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.jdbc.core: DEBUG
+    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari.pool.HikariPool: DEBUG
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    docExpansion: none
+    disable-swagger-default-url: true
+  packages-to-scan: com.cibofdevs.envpilot.controller
+  paths-to-match: /api/**

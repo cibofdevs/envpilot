@@ -1,0 +1,32 @@
+# Node / React
+node_modules/
+build/
+dist/
+.env
+.env.*
+
+# Java / Spring Boot
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+*.iml
+*.log
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Test / Coverage
+coverage/
+
+# Misc
+uploads/
+*.local
+*.bak
+*.tmp
+
+# Netlify
+frontend/.netlify/ 
