@@ -24,7 +24,6 @@ function ModalPortal({ children }) {
 }
 
 export default function ProjectsList() {
-  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,7 +37,7 @@ export default function ProjectsList() {
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { isAdmin, isDeveloper } = useAuth();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     fetchProjects();

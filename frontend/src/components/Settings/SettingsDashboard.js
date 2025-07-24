@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserIcon, Cog6ToothIcon, WrenchScrewdriverIcon, InformationCircleIcon, ServerIcon } from '@heroicons/react/24/outline';
+import { UserIcon, Cog6ToothIcon, WrenchScrewdriverIcon, ServerIcon } from '@heroicons/react/24/outline';
 import UserProfile from './UserProfile';
 import UserPreferences from './UserPreferences';
 import SystemSettings from './SystemSettings';
-import SystemInfo from './SystemInfo';
 import SystemMonitoring from './SystemMonitoring';
 
 const SettingsDashboard = () => {
@@ -32,7 +31,7 @@ const SettingsDashboard = () => {
     if (tabParam && tabs.some(tab => tab.id === tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [location.search]);
+  }, [location.search, tabs]);
 
   // Update URL when tab changes
   const handleTabChange = (tabId) => {

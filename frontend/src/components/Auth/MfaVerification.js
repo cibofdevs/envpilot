@@ -12,7 +12,6 @@ const MfaVerification = ({ tempToken, onComplete }) => {
   const [loading, setLoading] = useState(false);
   
   const { completeMfaLogin, resetMfaState } = useAuth();
-  const { currentTheme } = useTheme();
 
   const handleVerification = async () => {
     if (!verificationCode || verificationCode.length !== 6) {

@@ -25,16 +25,6 @@ const EnvironmentMetrics = ({ data }) => {
     }
   };
 
-  const getStatusTextColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'active': return 'text-green-600 dark:text-green-400';
-      case 'inactive': return 'text-gray-600 dark:text-gray-400';
-      case 'maintenance': return 'text-yellow-600 dark:text-yellow-400';
-      case 'error': return 'text-red-600 dark:text-red-400';
-      default: return 'text-blue-600 dark:text-blue-400';
-    }
-  };
-
   const renderMetricCard = (title, value, subtitle, icon, color = 'blue') => (
     <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between">

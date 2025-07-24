@@ -40,7 +40,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
       }
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [project.id, buildNumber, autoRefresh, onClose]);
+  }, [project.id, buildNumber, autoRefresh, onClose, fetchLogs]);
 
   const fetchLogs = async () => {
     try {
@@ -64,33 +64,6 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
 
   const handleAutoRefreshToggle = () => {
     setAutoRefresh(!autoRefresh);
-  };
-
-  const formatLogs = (logText) => {
-    if (!logText) return '';
-    return logText
-      .split('\n')
-      .map((line, index) => {
-        let className = 'text-gray-800 bg-white';
-        if (/error|failed|exception/i.test(line)) {
-          className = 'text-red-700 bg-red-50 font-semibold';
-        } else if (/warn|warning/i.test(line)) {
-          className = 'text-yellow-800 bg-yellow-50 font-semibold';
-        } else if (/success|passed|build successful/i.test(line)) {
-          className = 'text-green-700 bg-green-50 font-semibold';
-        } else if (/info|starting|running|building/i.test(line)) {
-          className = 'text-blue-800 bg-blue-50';
-        }
-        return (
-          <div
-            key={index}
-            className={`font-mono text-xs px-2 py-0.5 rounded ${className}`}
-            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-          >
-            {line}
-          </div>
-        );
-      });
   };
 
   // Render modal using React Portal to ensure it's rendered at the top level

@@ -24,10 +24,6 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchProject();
-  }, [id]);
-
   const fetchProject = async () => {
     try {
       const response = await projectsAPI.getById(id);
@@ -39,6 +35,10 @@ export default function ProjectDetail() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProject();
+  }, [id]);
 
   if (loading) {
     return (

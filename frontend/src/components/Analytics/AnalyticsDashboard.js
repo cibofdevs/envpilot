@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { analyticsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import OverviewCards from './OverviewCards';
@@ -23,13 +23,9 @@ const AnalyticsDashboard = () => {
     performance: null
   });
 
-  useEffect(() => {
-    loadAnalyticsData();
-  }, [dateRange]);
-
-  const loadAnalyticsData = async () => {
+  const loadAnalyticsData = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       setError(null);
       
       const [overview, trends, deployments, environments, performance] = await Promise.all([
@@ -53,7 +49,11 @@ const AnalyticsDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [dateRange, loadAnalyticsData]);
 
   const handleExportData = async () => {
     try {
@@ -84,17 +84,7 @@ const AnalyticsDashboard = () => {
     }
   };
 
-  if (!user || user.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Access Denied</h2>
-          <p className="text-gray-600 dark:text-gray-400">Only administrators can access analytics dashboard.</p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Please contact your administrator if you need access.</p>
-        </div>
-      </div>
-    );
-  }
+
 
   if (loading) {
     return (

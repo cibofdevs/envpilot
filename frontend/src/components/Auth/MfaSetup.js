@@ -22,7 +22,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
 
   useEffect(() => {
     setupMfa();
-  }, []);
+  }, [setupMfa]);
 
   const setupMfa = async () => {
     try {

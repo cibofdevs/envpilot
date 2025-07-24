@@ -21,13 +21,6 @@ const ProjectAssignments = ({ projectId, projectName }) => {
   const [selectedRole, setSelectedRole] = useState('MEMBER');
   const [notes, setNotes] = useState('');
 
-  useEffect(() => {
-    if (isAdmin()) {
-      fetchAssignments();
-      fetchUsers();
-    }
-  }, [projectId, isAdmin]);
-
   const fetchAssignments = async () => {
     try {
       const response = await projectAssignmentAPI.getProjectAssignments(projectId);
@@ -50,6 +43,17 @@ const ProjectAssignments = ({ projectId, projectName }) => {
       setUsers([]);
     }
   };
+
+  useEffect(() => {
+    if (isAdmin()) {
+      fetchAssignments();
+      fetchUsers();
+    }
+  }, [projectId, isAdmin]);
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [fetchAssignments]);
 
   const handleAssignUsers = async () => {
     if (selectedUsers.length === 0) {

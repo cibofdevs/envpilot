@@ -35,13 +35,6 @@ export default function ProjectOverview({ project, onUpdate }) {
   const [deployments, setDeployments] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // Fetch environments and deployments when component mounts or project changes
-  useEffect(() => {
-    if (project?.id) {
-      fetchProjectStats();
-    }
-  }, [project?.id]);
-
   const fetchProjectStats = async () => {
     setLoadingStats(true);
     try {
@@ -50,7 +43,6 @@ export default function ProjectOverview({ project, onUpdate }) {
         projectsAPI.getEnvironments(project.id),
         projectsAPI.getDeployments(project.id)
       ]);
-      
       setEnvironments(environmentsResponse.data);
       setDeployments(deploymentsResponse.data);
     } catch (error) {
@@ -60,6 +52,13 @@ export default function ProjectOverview({ project, onUpdate }) {
       setLoadingStats(false);
     }
   };
+
+  // Fetch environments and deployments when component mounts or project changes
+  useEffect(() => {
+    if (project?.id) {
+      fetchProjectStats();
+    }
+  }, [project?.id]);
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();

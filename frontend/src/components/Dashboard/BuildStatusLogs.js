@@ -30,13 +30,43 @@ const BuildStatusLogs = () => {
   }); // Show 5 items per page
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
-  const { isAdmin, user } = useAuth();
+  const { isAdmin } = useAuth();
 
   // Pagination calculations (moved up to avoid initialization error)
-  const totalPages = Math.ceil(recentBuilds.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentBuilds = recentBuilds.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const goToPage = (page) => {
+    const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
+    const newPage = Math.max(1, Math.min(page, maxPage));
+    if (newPage !== currentPage) {
+      setIsPageTransitioning(true);
+      setTimeout(() => {
+        setCurrentPage(newPage);
+        setIsPageTransitioning(false);
+        // Smooth scroll to top of the component
+        const element = document.querySelector('.bg-white.dark\\:bg-gray-900.shadow.rounded-lg.p-6');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
+    if (currentPage < maxPage) {
+      goToPage(currentPage + 1);
+    }
+  };
 
   useEffect(() => {
     fetchProjectsAndBuilds();
@@ -65,7 +95,7 @@ const BuildStatusLogs = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, recentBuilds.length, itemsPerPage]);
+  }, [currentPage, recentBuilds.length, itemsPerPage, goToNextPage, goToPage, goToPreviousPage]);
 
   // Reset to first page when data changes
   useEffect(() => {
@@ -132,37 +162,6 @@ const BuildStatusLogs = () => {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Pagination handlers
-  const goToPage = (page) => {
-    const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
-    const newPage = Math.max(1, Math.min(page, maxPage));
-    if (newPage !== currentPage) {
-      setIsPageTransitioning(true);
-      setTimeout(() => {
-        setCurrentPage(newPage);
-        setIsPageTransitioning(false);
-        // Smooth scroll to top of the component
-        const element = document.querySelector('.bg-white.dark\\:bg-gray-900.shadow.rounded-lg.p-6');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 150);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
-    if (currentPage < maxPage) {
-      goToPage(currentPage + 1);
     }
   };
 

@@ -15,7 +15,7 @@ import {
 import BuildLogs from './BuildLogs';
 
 export default function JenkinsDeployment({ project }) {
-  const { canDeploy, canDeployToEnvironment, isAdmin } = useAuth();
+  const { canDeploy, canDeployToEnvironment } = useAuth();
   const { showSuccess, showError } = useToast();
   const [environments, setEnvironments] = useState([]);
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
@@ -27,27 +27,6 @@ export default function JenkinsDeployment({ project }) {
   const [showLogs, setShowLogs] = useState(false);
   const autoRefreshInterval = useRef(null);
   const autoRefreshTimeout = useRef(null);
-
-  useEffect(() => {
-    if (project) {
-      fetchEnvironments();
-      fetchBuildStatus();
-    }
-    return () => {
-      if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
-      if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
-    };
-  }, [project]);
-
-  const startAutoRefreshBuildStatus = () => {
-    if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
-    if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
-    // Set interval every 3s, stop after 30s
-    autoRefreshInterval.current = setInterval(fetchBuildStatus, 3000);
-    autoRefreshTimeout.current = setTimeout(() => {
-      if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
-    }, 30000);
-  };
 
   const fetchEnvironments = async () => {
     try {
@@ -81,6 +60,27 @@ export default function JenkinsDeployment({ project }) {
     } finally {
       setLoadingStatus(false);
     }
+  };
+
+  useEffect(() => {
+    if (project) {
+      fetchEnvironments();
+      fetchBuildStatus();
+    }
+    return () => {
+      if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
+      if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
+    };
+  }, [project, fetchEnvironments, fetchBuildStatus]);
+
+  const startAutoRefreshBuildStatus = () => {
+    if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
+    if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
+    // Set interval every 3s, stop after 30s
+    autoRefreshInterval.current = setInterval(fetchBuildStatus, 3000);
+    autoRefreshTimeout.current = setTimeout(() => {
+      if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
+    }, 30000);
   };
 
   const handleDeploy = async (e) => {

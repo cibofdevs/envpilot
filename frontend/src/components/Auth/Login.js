@@ -27,8 +27,6 @@ export default function Login() {
     token
   } = useAuth();
 
-  const { currentTheme } = useTheme();
-
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
     console.log('Login useEffect triggered:', { user: !!user, token: !!token, mfaRequired, mfaSetupRequired });

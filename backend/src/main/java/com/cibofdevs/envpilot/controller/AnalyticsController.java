@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/analytics")
-@PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Analytics", description = "Analytics and reporting APIs")
 @SecurityRequirement(name = "Bearer Authentication")
 public class AnalyticsController {
@@ -91,7 +90,7 @@ public class AnalyticsController {
     public ResponseEntity<Map<String, Object>> getAnalyticsOverview() {
         if (!featureFlagService.isAnalyticsEnabled()) {
             Map<String, Object> response = new HashMap<>();
-            response.put("error", "Fitur analytics sedang dinonaktifkan oleh administrator.");
+            response.put("error", "Analytics feature is disabled by administrator.");
             return ResponseEntity.status(403).body(response);
         }
         Map<String, Object> overview = new HashMap<>();
@@ -123,7 +122,7 @@ public class AnalyticsController {
             @RequestParam(defaultValue = "30") int days) {
         if (!featureFlagService.isAnalyticsEnabled()) {
             Map<String, Object> response = new HashMap<>();
-            response.put("error", "Fitur analytics sedang dinonaktifkan oleh administrator.");
+            response.put("error", "Analytics feature is disabled by administrator.");
             return ResponseEntity.status(403).body(response);
         }
         
@@ -186,7 +185,7 @@ public class AnalyticsController {
             @RequestParam(defaultValue = "30") int days) {
         if (!featureFlagService.isAnalyticsEnabled()) {
             Map<String, Object> response = new HashMap<>();
-            response.put("error", "Fitur analytics sedang dinonaktifkan oleh administrator.");
+            response.put("error", "Analytics feature is disabled by administrator.");
             return ResponseEntity.status(403).body(response);
         }
         
@@ -237,7 +236,7 @@ public class AnalyticsController {
     public ResponseEntity<Map<String, Object>> getEnvironmentMetrics() {
         if (!featureFlagService.isAnalyticsEnabled()) {
             Map<String, Object> response = new HashMap<>();
-            response.put("error", "Fitur analytics sedang dinonaktifkan oleh administrator.");
+            response.put("error", "Analytics feature is disabled by administrator.");
             return ResponseEntity.status(403).body(response);
         }
         Map<String, Object> metrics = new HashMap<>();
@@ -327,7 +326,7 @@ public class AnalyticsController {
             @RequestParam(defaultValue = "30") int days) {
         if (!featureFlagService.isAnalyticsEnabled()) {
             Map<String, Object> response = new HashMap<>();
-            response.put("error", "Fitur analytics sedang dinonaktifkan oleh administrator.");
+            response.put("error", "Analytics feature is disabled by administrator.");
             return ResponseEntity.status(403).body(response);
         }
         

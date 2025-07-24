@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { jenkinsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -25,19 +25,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
   const [message, setMessage] = useState(null);
   const [testResult, setTestResult] = useState(null);
 
-  useEffect(() => {
-    if (project) {
-      setConfig({
-        jenkinsUrl: project.jenkinsUrl || '',
-        jenkinsJobName: project.jenkinsJobName || '',
-        jenkinsUsername: project.jenkinsUsername || '',
-        jenkinsToken: project.jenkinsToken || '',
-      });
-      fetchJenkinsConfig();
-    }
-  }, [project]);
-
-  const fetchJenkinsConfig = async () => {
+  const fetchJenkinsConfig = useCallback(async () => {
     try {
       setLoading(true);
       const response = await jenkinsAPI.getConfig(project.id);
@@ -57,7 +45,19 @@ export default function JenkinsConfig({ project, onUpdate }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [project?.id]);
+
+  useEffect(() => {
+    if (project) {
+      setConfig({
+        jenkinsUrl: project.jenkinsUrl || '',
+        jenkinsJobName: project.jenkinsJobName || '',
+        jenkinsUsername: project.jenkinsUsername || '',
+        jenkinsToken: project.jenkinsToken || '',
+      });
+      fetchJenkinsConfig();
+    }
+  }, [project, fetchJenkinsConfig]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

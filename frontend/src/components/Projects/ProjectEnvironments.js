@@ -69,69 +69,6 @@ export default function ProjectEnvironments({ project }) {
   const [lastBuildNumber, setLastBuildNumber] = useState(null);
   const [lastDeployedEnvironment, setLastDeployedEnvironment] = useState(null);
 
-  useEffect(() => {
-    fetchEnvironments();
-    // Fetch assignments for all users to enable filtering for DEVELOPER and QA
-    fetchAssignments();
-    if (isAdmin()) {
-      fetchUsers();
-    }
-  }, [project.id, isAdmin]);
-
-  // Real-time polling for deployment status
-  useEffect(() => {
-    const pollDeploymentStatus = async () => {
-      // Check if any environment is deploying
-      const deployingEnvironments = environments.filter(env => 
-        env.status === 'DEPLOYING' || env.status === 'IN_PROGRESS'
-      );
-      
-      if (deployingEnvironments.length > 0) {
-        try {
-          // First, sync all active deployments from Jenkins
-          await jenkinsAPI.syncAllDeployments();
-          
-          // Then fetch latest environment status
-          const response = await projectsAPI.getEnvironments(project.id);
-          setEnvironments(response.data);
-          
-          // Update stats if admin
-          if (isAdmin()) {
-            await fetchEnvironmentStats(response.data);
-          }
-        } catch (error) {
-          console.error('Error polling deployment status:', error);
-        }
-      }
-    };
-
-    // Poll every 3 seconds if there are deploying environments
-    const deployingEnvironments = environments.filter(env => 
-      env.status === 'DEPLOYING' || env.status === 'IN_PROGRESS'
-    );
-    
-    if (deployingEnvironments.length > 0) {
-      const interval = setInterval(pollDeploymentStatus, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [environments, project.id, isAdmin]);
-
-  const fetchEnvironments = async () => {
-    try {
-      const response = await projectsAPI.getEnvironments(project.id);
-      setEnvironments(response.data);
-      
-      // Fetch feature flags and configurations for each environment (admin only)
-      if (isAdmin()) {
-        await fetchEnvironmentStats(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching environments:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchEnvironmentStats = async (envs) => {
     // Only fetch stats for admin users
     if (!isAdmin()) {
@@ -179,6 +116,88 @@ export default function ProjectEnvironments({ project }) {
       setLoadingStats(false);
     }
   };
+
+  const fetchEnvironments = async () => {
+    try {
+      const response = await projectsAPI.getEnvironments(project.id);
+      setEnvironments(response.data);
+      // Fetch feature flags and configurations for each environment (admin only)
+      if (isAdmin()) {
+        await fetchEnvironmentStats(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching environments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      console.log('Fetching assignments for project:', project.id);
+      const response = await environmentAssignmentAPI.getProjectEnvironmentAssignments(project.id);
+
+      setAssignments(response.data || []);
+    } catch (error) {
+      console.error('Error fetching environment assignments:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await usersAPI.getUsers();
+      setUsers(response.data?.users || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setUsers([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchEnvironments();
+    fetchAssignments();
+    if (isAdmin()) {
+      fetchUsers();
+    }
+  }, [project.id, isAdmin, fetchEnvironments, fetchAssignments, fetchUsers]);
+
+  // Real-time polling for deployment status
+  useEffect(() => {
+    const pollDeploymentStatus = async () => {
+      // Check if any environment is deploying
+      const deployingEnvironments = environments.filter(env => 
+        env.status === 'DEPLOYING' || env.status === 'IN_PROGRESS'
+      );
+      
+      if (deployingEnvironments.length > 0) {
+        try {
+          // First, sync all active deployments from Jenkins
+          await jenkinsAPI.syncAllDeployments();
+          
+          // Then fetch latest environment status
+          const response = await projectsAPI.getEnvironments(project.id);
+          setEnvironments(response.data);
+          
+          // Update stats if admin
+          if (isAdmin()) {
+            await fetchEnvironmentStats(response.data);
+          }
+        } catch (error) {
+          console.error('Error polling deployment status:', error);
+        }
+      }
+    };
+
+    // Poll every 3 seconds if there are deploying environments
+    const deployingEnvironments = environments.filter(env => 
+      env.status === 'DEPLOYING' || env.status === 'IN_PROGRESS'
+    );
+    
+    if (deployingEnvironments.length > 0) {
+      const interval = setInterval(pollDeploymentStatus, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [environments, project.id, isAdmin, fetchEnvironmentStats]);
 
   const handleQuickDeploy = async (environmentId) => {
     if (!canDeploy()) {
@@ -262,27 +281,6 @@ export default function ProjectEnvironments({ project }) {
   };
 
   // Environment Assignment functions
-  const fetchAssignments = async () => {
-    try {
-      console.log('Fetching assignments for project:', project.id);
-      const response = await environmentAssignmentAPI.getProjectEnvironmentAssignments(project.id);
-
-      setAssignments(response.data || []);
-    } catch (error) {
-      console.error('Error fetching environment assignments:', error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await usersAPI.getUsers();
-      setUsers(response.data?.users || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setUsers([]);
-    }
-  };
-
   const handleAssignUsers = async () => {
     if (selectedUsers.length === 0) {
       showError('Please select at least one user');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usersAPI, settingsAPI } from '../../services/api';
 import UsersList from './UsersList';
 import UserForm from './UserForm';
@@ -31,17 +31,7 @@ const UsersDashboard = () => {
     role: ''
   });
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === 'users') {
-      loadUsers();
-    }
-  }, [filters, activeTab]);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       const [rolesResponse, statsResponse, settingsResponse] = await Promise.all([
@@ -59,9 +49,9 @@ const UsersDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await usersAPI.getUsers(filters);
@@ -79,7 +69,17 @@ const UsersDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  useEffect(() => {
+    if (activeTab === 'users') {
+      loadUsers();
+    }
+  }, [activeTab, loadUsers]);
 
   const handleCreateUser = () => {
     setEditingUser(null);
