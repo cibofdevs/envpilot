@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { analyticsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
 import OverviewCards from './OverviewCards';
 import TrendsChart from './TrendsChart';
 import DeploymentAnalytics from './DeploymentAnalytics';
@@ -9,7 +8,6 @@ import PerformanceMetrics from './PerformanceMetrics';
 import { ChartBarIcon, ArrowTrendingUpIcon, RocketLaunchIcon, GlobeAltIcon, BoltIcon, ArrowDownTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 const AnalyticsDashboard = () => {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,7 +50,10 @@ const AnalyticsDashboard = () => {
   }, [dateRange]);
 
   useEffect(() => {
-    loadAnalyticsData();
+    const loadData = async () => {
+      await loadAnalyticsData();
+    };
+    void loadData();
   }, [dateRange, loadAnalyticsData]);
 
   const handleExportData = async () => {
@@ -84,6 +85,13 @@ const AnalyticsDashboard = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    await loadAnalyticsData();
+  };
+
+  const handleRetry = async () => {
+    await loadAnalyticsData();
+  };
 
 
   if (loading) {
@@ -101,7 +109,7 @@ const AnalyticsDashboard = () => {
           <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
-            onClick={loadAnalyticsData}
+            onClick={handleRetry}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             Retry
@@ -153,7 +161,7 @@ const AnalyticsDashboard = () => {
               
               {/* Refresh Button */}
               <button
-                onClick={loadAnalyticsData}
+                onClick={handleRefresh}
                 className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2 text-sm"
               >
                 <ArrowPathIcon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -166,20 +174,23 @@ const AnalyticsDashboard = () => {
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
           <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 sm:space-x-2 whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <tab.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>{tab.name}</span>
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 sm:space-x-2 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>{tab.name}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 

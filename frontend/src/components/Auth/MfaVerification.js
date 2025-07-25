@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../hooks/useTheme';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import ErrorModal from '../Common/ErrorModal';
 import { authAPI } from '../../services/api';

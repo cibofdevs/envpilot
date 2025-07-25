@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { 
   ServerIcon, 
@@ -69,7 +69,7 @@ export default function ProjectEnvironments({ project }) {
   const [lastBuildNumber, setLastBuildNumber] = useState(null);
   const [lastDeployedEnvironment, setLastDeployedEnvironment] = useState(null);
 
-  const fetchEnvironmentStats = async (envs) => {
+  const fetchEnvironmentStats = useCallback(async (envs) => {
     // Only fetch stats for admin users
     if (!isAdmin()) {
       setLoadingStats(false);
@@ -115,9 +115,9 @@ export default function ProjectEnvironments({ project }) {
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, [isAdmin]);
 
-  const fetchEnvironments = async () => {
+  const fetchEnvironments = useCallback(async () => {
     try {
       const response = await projectsAPI.getEnvironments(project.id);
       setEnvironments(response.data);
@@ -130,9 +130,9 @@ export default function ProjectEnvironments({ project }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [project.id, isAdmin, fetchEnvironmentStats]);
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async () => {
     try {
       console.log('Fetching assignments for project:', project.id);
       const response = await environmentAssignmentAPI.getProjectEnvironmentAssignments(project.id);
@@ -141,9 +141,9 @@ export default function ProjectEnvironments({ project }) {
     } catch (error) {
       console.error('Error fetching environment assignments:', error);
     }
-  };
+  }, [project.id]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await usersAPI.getUsers();
       setUsers(response.data?.users || []);
@@ -151,7 +151,7 @@ export default function ProjectEnvironments({ project }) {
       console.error('Error fetching users:', error);
       setUsers([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchEnvironments();

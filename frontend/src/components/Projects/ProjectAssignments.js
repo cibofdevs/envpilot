@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { projectAssignmentAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Common/Toast';
@@ -21,7 +21,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
   const [selectedRole, setSelectedRole] = useState('MEMBER');
   const [notes, setNotes] = useState('');
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async () => {
     try {
       const response = await projectAssignmentAPI.getProjectAssignments(projectId);
       if (response.data.success) {
@@ -32,7 +32,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
   const fetchUsers = async () => {
     try {
@@ -49,7 +49,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
       fetchAssignments();
       fetchUsers();
     }
-  }, [projectId, isAdmin]);
+  }, [projectId, isAdmin, fetchAssignments]);
 
   useEffect(() => {
     fetchAssignments();

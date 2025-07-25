@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { jenkinsAPI, projectsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Common/Toast';
@@ -28,7 +28,7 @@ export default function JenkinsDeployment({ project }) {
   const autoRefreshInterval = useRef(null);
   const autoRefreshTimeout = useRef(null);
 
-  const fetchEnvironments = async () => {
+  const fetchEnvironments = useCallback(async () => {
     try {
       const response = await projectsAPI.getEnvironments(project.id);
       setEnvironments(response.data);
@@ -44,9 +44,14 @@ export default function JenkinsDeployment({ project }) {
     } catch (error) {
       console.error('Error fetching environments:', error);
     }
-  };
+  }, [project.id]);
 
-  const fetchBuildStatus = async () => {
+  const isJenkinsConfigured = useCallback(() => {
+    return project.jenkinsUrl && project.jenkinsJobName && 
+           project.jenkinsUsername && project.jenkinsToken;
+  }, [project.jenkinsUrl, project.jenkinsJobName, project.jenkinsUsername, project.jenkinsToken]);
+
+  const fetchBuildStatus = useCallback(async () => {
     if (!isJenkinsConfigured()) return;
     
     try {
@@ -60,7 +65,7 @@ export default function JenkinsDeployment({ project }) {
     } finally {
       setLoadingStatus(false);
     }
-  };
+  }, [project.id, isJenkinsConfigured]);
 
   useEffect(() => {
     if (project) {
@@ -156,11 +161,6 @@ export default function JenkinsDeployment({ project }) {
 
   const clearSavedEnvironment = () => {
     localStorage.removeItem(`lastSelectedEnvironment_${project.id}`);
-  };
-
-  const isJenkinsConfigured = () => {
-    return project.jenkinsUrl && project.jenkinsJobName && 
-           project.jenkinsUsername && project.jenkinsToken;
   };
 
   const getBuildStatusIcon = (status) => {

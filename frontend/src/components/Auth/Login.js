@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../hooks/useTheme';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import ErrorModal from '../Common/ErrorModal';
 import MfaVerification from './MfaVerification';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { jenkinsAPI } from '../../services/api';
 import { 
@@ -16,6 +16,26 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const refreshIntervalRef = useRef(null);
+
+  const fetchLogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await jenkinsAPI.getBuildLogs(project.id, buildNumber);
+      
+      if (response.data.success) {
+        setLogs(response.data.logs);
+      } else {
+        setError(response.data.message || 'Failed to fetch build logs');
+      }
+    } catch (err) {
+      console.error('Error fetching build logs:', err);
+      setError('Failed to fetch build logs');
+    } finally {
+      setLoading(false);
+    }
+  }, [project.id, buildNumber]);
 
   useEffect(() => {
     fetchLogs();
@@ -40,27 +60,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
       }
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [project.id, buildNumber, autoRefresh, onClose, fetchLogs]);
-
-  const fetchLogs = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      const response = await jenkinsAPI.getBuildLogs(project.id, buildNumber);
-      
-      if (response.data.success) {
-        setLogs(response.data.logs);
-      } else {
-        setError(response.data.message || 'Failed to fetch build logs');
-      }
-    } catch (err) {
-      console.error('Error fetching build logs:', err);
-      setError('Failed to fetch build logs');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [autoRefresh, onClose, fetchLogs]);
 
   const handleAutoRefreshToggle = () => {
     setAutoRefresh(!autoRefresh);

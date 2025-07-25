@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { dashboardAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -37,8 +37,8 @@ const BuildStatusLogs = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentBuilds = recentBuilds.slice(startIndex, endIndex);
 
-  // Pagination handlers
-  const goToPage = (page) => {
+  // Pagination handlers wrapped with useCallback
+  const goToPage = useCallback((page) => {
     const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
     const newPage = Math.max(1, Math.min(page, maxPage));
     if (newPage !== currentPage) {
@@ -53,20 +53,20 @@ const BuildStatusLogs = () => {
         }
       }, 150);
     }
-  };
+  }, [currentPage, recentBuilds.length, itemsPerPage]);
 
-  const goToPreviousPage = () => {
+  const goToPreviousPage = useCallback(() => {
     if (currentPage > 1) {
       goToPage(currentPage - 1);
     }
-  };
+  }, [currentPage, goToPage]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     const maxPage = Math.ceil(recentBuilds.length / itemsPerPage);
     if (currentPage < maxPage) {
       goToPage(currentPage + 1);
     }
-  };
+  }, [currentPage, recentBuilds.length, itemsPerPage, goToPage]);
 
   useEffect(() => {
     fetchProjectsAndBuilds();

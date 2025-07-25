@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
 import { QrCodeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -20,11 +20,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
   const { completeMfaSetup } = useAuth();
   const { currentTheme } = useTheme();
 
-  useEffect(() => {
-    setupMfa();
-  }, [setupMfa]);
-
-  const setupMfa = async () => {
+  const setupMfa = useCallback(async () => {
     try {
       setLoading(true);
       const response = await authAPI.setupMfa(tempToken);
@@ -44,7 +40,11 @@ const MfaSetup = ({ tempToken, onComplete }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tempToken]);
+
+  useEffect(() => {
+    setupMfa();
+  }, [setupMfa]);
 
   const handleVerification = async () => {
     if (!verificationCode || verificationCode.length !== 6) {

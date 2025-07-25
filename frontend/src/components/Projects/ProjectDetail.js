@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Tab } from '@headlessui/react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
@@ -24,7 +24,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await projectsAPI.getById(id);
       setProject(response.data);
@@ -34,11 +34,11 @@ export default function ProjectDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchProject();
-  }, [id]);
+  }, [id, fetchProject]);
 
   if (loading) {
     return (

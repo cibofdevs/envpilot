@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserIcon, Cog6ToothIcon, WrenchScrewdriverIcon, ServerIcon } from '@heroicons/react/24/outline';
@@ -15,14 +15,14 @@ const SettingsDashboard = () => {
   const [loading] = useState(false);
   const [error] = useState('');
 
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'profile', name: 'Profile', icon: UserIcon },
     { id: 'preferences', name: 'Preferences', icon: Cog6ToothIcon },
     ...(user?.role === 'ADMIN' ? [
       { id: 'system', name: 'System Settings', icon: WrenchScrewdriverIcon },
       { id: 'monitoring', name: 'System Monitoring', icon: ServerIcon }
     ] : [])
-  ];
+  ], [user?.role]);
 
   // Handle URL parameters for tab selection
   useEffect(() => {

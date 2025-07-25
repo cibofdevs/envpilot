@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { projectsAPI, jenkinsAPI } from '../../services/api';
 import notificationService from '../../services/notificationService';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, PauseCircleIcon, QuestionMarkCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -12,15 +12,9 @@ const ProjectDeployments = ({ projectId }) => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(5);
 
-  useEffect(() => {
-    if (projectId) {
-      loadDeployments();
-    }
-  }, [projectId]);
-
-  const loadDeployments = async () => {
+  const loadDeployments = useCallback(async () => {
     if (!projectId) {
-      setError('Project ID tidak ditemukan.');
+      setError('Project ID not found.');
       setLoading(false);
       return;
     }
@@ -33,7 +27,13 @@ const ProjectDeployments = ({ projectId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadDeployments();
+    }
+  }, [projectId, loadDeployments]);
 
   const handleRefresh = async () => {
     if (!projectId) return;
@@ -247,7 +247,7 @@ const ProjectDeployments = ({ projectId }) => {
             </div>
           ))}
         </div>
-        {/* Pagination Controls dengan angka */}
+        {/* Pagination Controls with numbers */}
         <div className="flex justify-center items-center mt-4 space-x-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}

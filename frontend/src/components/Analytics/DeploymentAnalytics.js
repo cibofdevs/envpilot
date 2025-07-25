@@ -202,7 +202,7 @@ const DeploymentAnalytics = ({ data }) => {
                       {deployment.projectName || 'Unknown Project'}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {deployment.environmentName || 'Unknown Environment'}
+                      {deployment.environment?.name || 'Unknown Environment'}
                     </p>
                   </div>
                 </div>

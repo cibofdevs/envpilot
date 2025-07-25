@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -35,7 +35,7 @@ export default function ProjectOverview({ project, onUpdate }) {
   const [deployments, setDeployments] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  const fetchProjectStats = async () => {
+  const fetchProjectStats = useCallback(async () => {
     setLoadingStats(true);
     try {
       // Fetch environments and deployments in parallel
@@ -51,14 +51,14 @@ export default function ProjectOverview({ project, onUpdate }) {
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, [project.id]);
 
   // Fetch environments and deployments when component mounts or project changes
   useEffect(() => {
     if (project?.id) {
       fetchProjectStats();
     }
-  }, [project?.id]);
+  }, [project?.id, fetchProjectStats]);
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
