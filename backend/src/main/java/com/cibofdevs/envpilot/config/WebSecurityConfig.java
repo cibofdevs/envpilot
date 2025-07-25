@@ -68,6 +68,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         "/api-docs",
                         "/api-docs/**"
                     ).permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/actuator/info").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/test/**").permitAll()
                     .requestMatchers("/static/**").permitAll()

@@ -50,7 +50,7 @@ npm start
 
 #### 4. Access the App
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
+- Backend API: http://localhost:9095
 
 ## Usage
 - Log in as admin (default: admin@envpilot.com / admin123)

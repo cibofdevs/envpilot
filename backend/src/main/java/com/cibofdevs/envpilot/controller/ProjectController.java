@@ -417,6 +417,11 @@ public class ProjectController {
         String jenkinsMsg = "Deployment triggered";
         Integer buildNumber = null;
         try {
+            System.out.println("🚀 ProjectController: Triggering Jenkins job for project: " + projectOpt.get().getName());
+            System.out.println("   Project ID: " + projectOpt.get().getId());
+            System.out.println("   Environment: " + environmentOpt.get().getName());
+            System.out.println("   Version: " + deploymentRequest.getVersion());
+            
             Map<String, Object> jenkinsResult = jenkinsService.triggerJenkinsJob(
                 projectOpt.get(),
                 environmentOpt.get(),
@@ -426,11 +431,21 @@ public class ProjectController {
                 triggeredBy
             );
             
-                    if ((Boolean) jenkinsResult.get("success")) {
-            // Try to get build number from Jenkins response
-            if (jenkinsResult.containsKey("buildNumber")) {
-                buildNumber = (Integer) jenkinsResult.get("buildNumber");
-            }
+            System.out.println("📋 ProjectController: Jenkins result received:");
+            System.out.println("   Success: " + jenkinsResult.get("success"));
+            System.out.println("   Build Number: " + jenkinsResult.get("buildNumber"));
+            System.out.println("   Build URL: " + jenkinsResult.get("buildUrl"));
+            System.out.println("   Build Location: " + jenkinsResult.get("buildLocation"));
+            System.out.println("   Full Jenkins Result: " + jenkinsResult);
+            
+            if ((Boolean) jenkinsResult.get("success")) {
+                // Try to get build number from Jenkins response
+                if (jenkinsResult.containsKey("buildNumber")) {
+                    buildNumber = (Integer) jenkinsResult.get("buildNumber");
+                    System.out.println("✅ ProjectController: Using build number from Jenkins result: " + buildNumber);
+                } else {
+                    System.out.println("⚠️ ProjectController: No build number in Jenkins result");
+                }
             
             // Update deployment with Jenkins build info if available
             if (buildNumber != null) {

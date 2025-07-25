@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class JenkinsService {
@@ -35,6 +36,13 @@ public class JenkinsService {
         Map<String, Object> result = new HashMap<>();
 
         try {
+            System.out.println("🚀 Triggering Jenkins job for project: " + project.getName());
+            System.out.println("   Project ID: " + project.getId());
+            System.out.println("   Jenkins Job: " + project.getJenkinsJobName());
+            System.out.println("   Environment: " + environment.getName());
+            System.out.println("   Version: " + version);
+            System.out.println("   Triggered By: " + triggeredBy.getName());
+            
             // Validate Jenkins configuration
             if (!isJenkinsConfigured(project)) {
                 result.put("success", false);
@@ -107,34 +115,53 @@ public class JenkinsService {
                 String location = response.getHeaders().getFirst("Location");
                 if (location != null) {
                     result.put("buildLocation", location);
+                    System.out.println("📍 Location header: " + location);
                     
                     // Try to extract build number from location URL
                     try {
                         String[] locationParts = location.split("/");
+                        System.out.println("🔍 Location parts: " + String.join(", ", locationParts));
+                        
                         for (int i = locationParts.length - 1; i >= 0; i--) {
-                            if (locationParts[i].matches("\\d+")) {
-                                int buildNum = Integer.parseInt(locationParts[i]);
+                            String part = locationParts[i];
+                            System.out.println("   Checking part " + i + ": '" + part + "'");
+                            
+                            if (part.matches("\\d+")) {
+                                int buildNum = Integer.parseInt(part);
                                 result.put("buildNumber", buildNum);
+                                System.out.println("✅ Extracted build number from location: " + buildNum);
                                 break;
                             }
                         }
                     } catch (Exception e) {
                         // If we can't parse build number, continue without it
-                        System.out.println("Could not extract build number from location: " + location);
+                        System.out.println("❌ Could not extract build number from location: " + location);
+                        System.out.println("   Error: " + e.getMessage());
                     }
+                } else {
+                    System.out.println("⚠️ No Location header found in response");
                 }
                 
-                // If we couldn't get build number from location, try to get it from the last build
-                if (!result.containsKey("buildNumber")) {
-                    try {
-                        Thread.sleep(2000); // Wait a bit for Jenkins to process the build
-                        Map<String, Object> lastBuild = getLastBuildStatus(project);
-                        if ((Boolean) lastBuild.get("success")) {
-                            result.put("buildNumber", lastBuild.get("buildNumber"));
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Could not get build number from last build: " + e.getMessage());
+                // Get build number from last build (since Location header is not available)
+                try {
+                    Thread.sleep(2000); // Wait for Jenkins to process the build
+                    Map<String, Object> lastBuild = getLastBuildStatus(project);
+                    
+                    if ((Boolean) lastBuild.get("success")) {
+                        Integer lastBuildNumber = (Integer) lastBuild.get("buildNumber");
+                        result.put("buildNumber", lastBuildNumber);
+                        System.out.println("✅ Build number retrieved: " + lastBuildNumber);
                     }
+                } catch (Exception e) {
+                    System.out.println("❌ Could not get build number: " + e.getMessage());
+                }
+                
+                // Log build number for debugging (without strict validation)
+                if (result.containsKey("buildNumber")) {
+                    Integer buildNumber = (Integer) result.get("buildNumber");
+                    System.out.println("✅ Final build number to be returned: " + buildNumber);
+                } else {
+                    System.out.println("⚠️ No build number available to return");
                 }
             } else {
                 result.put("success", false);
@@ -150,6 +177,15 @@ public class JenkinsService {
             result.put("message", "Error triggering Jenkins job: " + e.getMessage());
         }
 
+        // Log final result
+        if ((Boolean) result.get("success")) {
+            System.out.println("✅ Jenkins job triggered successfully");
+            System.out.println("   Final build number: " + result.get("buildNumber"));
+            System.out.println("   Build URL: " + result.get("buildUrl"));
+        } else {
+            System.out.println("❌ Jenkins job trigger failed: " + result.get("message"));
+        }
+
         return result;
     }
 
@@ -160,6 +196,10 @@ public class JenkinsService {
         Map<String, Object> result = new HashMap<>();
 
         try {
+            System.out.println("🔍 Getting last build status for project: " + project.getName());
+            System.out.println("   Project ID: " + project.getId());
+            System.out.println("   Jenkins Job: " + project.getJenkinsJobName());
+            
             if (!isJenkinsConfigured(project)) {
                 result.put("success", false);
                 result.put("message", "Jenkins configuration is incomplete");
@@ -171,6 +211,9 @@ public class JenkinsService {
                 jenkinsUrl += "/";
             }
             String buildStatusUrl = jenkinsUrl + "job/" + project.getJenkinsJobName() + "/lastBuild/api/json";
+            
+            System.out.println("   Jenkins URL: " + jenkinsUrl);
+            System.out.println("   Build Status URL: " + buildStatusUrl);
 
             // Prepare headers with Basic Auth
             HttpHeaders headers = new HttpHeaders();
@@ -184,9 +227,15 @@ public class JenkinsService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 JsonNode buildInfo = objectMapper.readTree(response.getBody());
+                
+                int buildNumber = buildInfo.get("number").asInt();
+                System.out.println("✅ Retrieved build number from Jenkins: " + buildNumber);
+                System.out.println("   Build URL: " + buildInfo.get("url").asText());
+                System.out.println("   Building: " + buildInfo.get("building").asBoolean());
+                System.out.println("   Result: " + (buildInfo.has("result") ? buildInfo.get("result").asText() : "IN_PROGRESS"));
 
                 result.put("success", true);
-                result.put("buildNumber", buildInfo.get("number").asInt());
+                result.put("buildNumber", buildNumber);
                 result.put("result", buildInfo.has("result") ? buildInfo.get("result").asText() : "IN_PROGRESS");
                 result.put("building", buildInfo.get("building").asBoolean());
                 result.put("timestamp", buildInfo.get("timestamp").asLong());
@@ -197,6 +246,7 @@ public class JenkinsService {
                     result.put("description", buildInfo.get("description").asText());
                 }
             } else {
+                System.out.println("❌ Failed to get build status. Status: " + response.getStatusCode());
                 result.put("success", false);
                 result.put("message", "Failed to get build status. Status: " + response.getStatusCode());
             }
@@ -320,8 +370,31 @@ public class JenkinsService {
 
         } catch (HttpClientErrorException e) {
             result.put("success", false);
+            System.out.println("🔍 Jenkins API Error - Status: " + e.getStatusCode().value() + ", Message: " + e.getMessage());
+            
             if (e.getStatusCode().value() == 404) {
-                result.put("message", "Build not found. The specified build number may not exist.");
+                // Try to get available builds to provide better error message
+                try {
+                    System.out.println("🔍 Attempting to get available builds for project: " + project.getName());
+                    Map<String, Object> availableBuilds = getAvailableBuildNumbers(project);
+                    if ((Boolean) availableBuilds.get("success")) {
+                        List<Integer> buildNumbers = (List<Integer>) availableBuilds.get("buildNumbers");
+                        if (buildNumbers != null && !buildNumbers.isEmpty()) {
+                            String availableBuildsStr = buildNumbers.stream().limit(10).map(String::valueOf).collect(Collectors.joining(", "));
+                            result.put("message", String.format("Build #%d not found. Available builds: %s", buildNumber, availableBuildsStr));
+                            System.out.println("✅ Available builds found: " + availableBuildsStr);
+                        } else {
+                            result.put("message", String.format("Build #%d not found. No builds available for this job.", buildNumber));
+                            System.out.println("⚠️ No builds available for job: " + project.getJenkinsJobName());
+                        }
+                    } else {
+                        result.put("message", String.format("Build #%d not found. The specified build number may not exist.", buildNumber));
+                        System.out.println("❌ Failed to get available builds: " + availableBuilds.get("message"));
+                    }
+                } catch (Exception ex) {
+                    result.put("message", String.format("Build #%d not found. The specified build number may not exist.", buildNumber));
+                    System.out.println("❌ Exception while getting available builds: " + ex.getMessage());
+                }
             } else if (e.getStatusCode().value() == 401) {
                 result.put("message", "Authentication failed. Please check Jenkins credentials.");
             } else if (e.getStatusCode().value() == 403) {
@@ -332,6 +405,8 @@ public class JenkinsService {
             result.put("statusCode", e.getStatusCode().value());
         } catch (Exception e) {
             result.put("success", false);
+            System.out.println("❌ Unexpected error in getBuildLogs: " + e.getMessage());
+            e.printStackTrace();
             result.put("message", "Error getting build logs: " + e.getMessage());
         }
 
@@ -431,6 +506,74 @@ public class JenkinsService {
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "Error getting recent builds: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Get available build numbers for a project
+     */
+    private Map<String, Object> getAvailableBuildNumbers(Project project) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            System.out.println("🔍 Getting available builds for project: " + project.getName());
+            
+            if (!isJenkinsConfigured(project)) {
+                result.put("success", false);
+                result.put("message", "Jenkins configuration is incomplete");
+                System.out.println("❌ Jenkins configuration incomplete for project: " + project.getName());
+                return result;
+            }
+
+            String jenkinsUrl = project.getJenkinsUrl();
+            if (!jenkinsUrl.endsWith("/")) {
+                jenkinsUrl += "/";
+            }
+            String buildsUrl = jenkinsUrl + "job/" + project.getJenkinsJobName() + "/api/json?tree=builds[number]";
+            System.out.println("🔍 Jenkins URL: " + buildsUrl);
+
+            // Prepare headers with Basic Auth
+            HttpHeaders headers = new HttpHeaders();
+            String auth = project.getJenkinsUsername() + ":" + project.getJenkinsToken();
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+            headers.set("Authorization", "Basic " + encodedAuth);
+
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(buildsUrl, HttpMethod.GET, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                JsonNode jobInfo = objectMapper.readTree(response.getBody());
+                JsonNode builds = jobInfo.get("builds");
+                
+                if (builds != null && builds.isArray()) {
+                    List<Integer> buildNumbers = new ArrayList<>();
+                    for (JsonNode build : builds) {
+                        if (build.has("number")) {
+                            buildNumbers.add(build.get("number").asInt());
+                        }
+                    }
+                    result.put("success", true);
+                    result.put("buildNumbers", buildNumbers);
+                    System.out.println("✅ Found " + buildNumbers.size() + " builds: " + buildNumbers);
+                } else {
+                    result.put("success", true);
+                    result.put("buildNumbers", new ArrayList<>());
+                    System.out.println("⚠️ No builds array found in response");
+                }
+            } else {
+                result.put("success", false);
+                result.put("message", "Failed to get build numbers. Status: " + response.getStatusCode());
+                System.out.println("❌ Failed to get build numbers. Status: " + response.getStatusCode());
+            }
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Error getting build numbers: " + e.getMessage());
+            System.out.println("❌ Exception in getAvailableBuildNumbers: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return result;

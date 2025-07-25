@@ -68,6 +68,7 @@ export default function ProjectEnvironments({ project }) {
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [lastBuildNumber, setLastBuildNumber] = useState(null);
   const [lastDeployedEnvironment, setLastDeployedEnvironment] = useState(null);
+  const [lastBuildProjectId, setLastBuildProjectId] = useState(null);
 
   const fetchEnvironmentStats = useCallback(async (envs) => {
     // Only fetch stats for admin users
@@ -199,6 +200,44 @@ export default function ProjectEnvironments({ project }) {
     }
   }, [environments, project.id, isAdmin, fetchEnvironmentStats]);
 
+  // Reset build info when project changes
+  useEffect(() => {
+    if (lastBuildProjectId && lastBuildProjectId !== project.id) {
+      console.log(`🔄 Project changed from ${lastBuildProjectId} to ${project.id}, resetting build info`);
+      setLastBuildNumber(null);
+      setLastDeployedEnvironment(null);
+      setLastBuildProjectId(null);
+      setShowLogsModal(false);
+    }
+  }, [project.id, lastBuildProjectId]);
+
+  // Auto-refresh build number for card notification
+  useEffect(() => {
+    const refreshBuildNumber = async () => {
+      if (lastBuildNumber && lastBuildProjectId === project.id) {
+        try {
+          console.log(`🔄 Auto-refreshing build number for project ${project.name} (ID: ${project.id})`);
+          const response = await jenkinsAPI.getBuildStatus(project.id);
+          if (response.data.success && response.data.buildNumber) {
+            const currentBuildNumber = response.data.buildNumber;
+            if (currentBuildNumber !== lastBuildNumber) {
+              console.log(`🔄 Updating build number from ${lastBuildNumber} to ${currentBuildNumber}`);
+              setLastBuildNumber(currentBuildNumber);
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing build number:', error);
+        }
+      }
+    };
+
+    // Refresh every 5 seconds if card notification is active
+    if (lastBuildNumber && lastBuildProjectId === project.id) {
+      const interval = setInterval(refreshBuildNumber, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [lastBuildNumber, lastBuildProjectId, project.id, project.name]);
+
   const handleQuickDeploy = async (environmentId) => {
     if (!canDeploy()) {
       setToast({ show: true, type: 'error', message: 'You do not have permission to deploy. Only ADMIN, DEVELOPER, and QA roles can deploy.' });
@@ -239,6 +278,8 @@ export default function ProjectEnvironments({ project }) {
         if (response.data.buildNumber) {
           setLastBuildNumber(response.data.buildNumber);
           setLastDeployedEnvironment(envObj);
+          setLastBuildProjectId(project.id);
+          console.log(`🚀 Build #${response.data.buildNumber} triggered for project ${project.name} (ID: ${project.id})`);
         }
         
         setToast({ 
@@ -437,7 +478,7 @@ export default function ProjectEnvironments({ project }) {
       <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false })} />
       
       {/* Log Real-time Shortcut */}
-      {lastBuildNumber && lastDeployedEnvironment && (
+      {lastBuildNumber && lastDeployedEnvironment && lastBuildProjectId === project.id && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -465,6 +506,7 @@ export default function ProjectEnvironments({ project }) {
                 onClick={() => {
                   setLastBuildNumber(null);
                   setLastDeployedEnvironment(null);
+                  setLastBuildProjectId(null);
                 }}
                 className="inline-flex items-center px-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
@@ -820,7 +862,7 @@ export default function ProjectEnvironments({ project }) {
       )}
 
       {/* Build Logs Modal */}
-      {showLogsModal && lastBuildNumber && (
+      {showLogsModal && lastBuildNumber && lastBuildProjectId === project.id && (
         <BuildLogs
           project={project}
           buildNumber={lastBuildNumber}

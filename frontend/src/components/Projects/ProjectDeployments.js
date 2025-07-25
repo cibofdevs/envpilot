@@ -107,6 +107,8 @@ const ProjectDeployments = ({ projectId }) => {
         setDeployments(newDeployments);
       } catch (err) {
         console.error('Failed to check deployment status:', err);
+        // Don't show error to user for background sync operations
+        // Only log for debugging purposes
       }
     };
 
@@ -120,6 +122,24 @@ const ProjectDeployments = ({ projectId }) => {
       return () => clearInterval(interval);
     }
   }, [deployments, projectId]);
+
+  // Auto-refresh deployment history every 10 seconds to ensure build numbers are up-to-date
+  useEffect(() => {
+    const autoRefreshDeployments = async () => {
+      if (!projectId) return;
+      try {
+        console.log('🔄 Auto-refreshing deployment history for project:', projectId);
+        const response = await projectsAPI.getProjectDeployments(projectId);
+        setDeployments(response.data);
+      } catch (err) {
+        console.error('Failed to auto-refresh deployment history:', err);
+      }
+    };
+
+    // Auto-refresh every 10 seconds to ensure build numbers are always current
+    const interval = setInterval(autoRefreshDeployments, 10000);
+    return () => clearInterval(interval);
+  }, [projectId]);
 
   // Pagination logic
   const totalPages = Math.ceil(deployments.length / pageSize);

@@ -31,12 +31,27 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
       }
     } catch (err) {
       console.error('Error fetching build logs:', err);
+      console.log('Error response data:', err.response?.data);
+      console.log('Error status:', err.response?.status);
+      
       let errorMessage = 'Failed to fetch build logs';
       
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
+        console.log('Using backend error message:', errorMessage);
+        
+        // If the error message contains available builds, format it nicely
+        if (errorMessage.includes('Available builds:')) {
+          const parts = errorMessage.split('Available builds:');
+          if (parts.length > 1) {
+            const availableBuilds = parts[1].trim();
+            errorMessage = `${parts[0].trim()}\n\nAvailable builds: ${availableBuilds}\n\n💡 Try selecting a different build number from the list above.`;
+            console.log('Formatted error message with available builds');
+          }
+        }
       } else if (err.response?.status === 404) {
-        errorMessage = 'Build not found. The specified build number may not exist.';
+        errorMessage = 'Build not found. Please check if the build number exists and try again.';
+        console.log('Using 404 fallback message');
       } else if (err.response?.status === 401) {
         errorMessage = 'Authentication failed. Please check Jenkins credentials.';
       } else if (err.response?.status === 403) {
@@ -45,6 +60,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
         errorMessage = 'Server error. Please try again later.';
       }
       
+      console.log('Final error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -169,16 +185,26 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="text-red-500 text-lg font-medium mb-2">Error</div>
-                <div className="text-gray-600 dark:text-gray-400">{error}</div>
-                <button
-                  onClick={fetchLogs}
-                  className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-                >
-                  Retry
-                </button>
+            <div className="flex items-center justify-center h-full p-4">
+              <div className="text-center max-w-md">
+                <div className="text-red-500 text-lg font-medium mb-3">❌ Error Loading Build Logs</div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line leading-relaxed">
+                  {error}
+                </div>
+                <div className="mt-4 space-y-2">
+                  <button
+                    onClick={fetchLogs}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  >
+                    🔄 Retry
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="ml-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

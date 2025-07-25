@@ -25,6 +25,8 @@ export default function JenkinsDeployment({ project }) {
   const [buildStatus, setBuildStatus] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [availableBuilds, setAvailableBuilds] = useState([]);
+  const [loadingBuilds, setLoadingBuilds] = useState(false);
   const autoRefreshInterval = useRef(null);
   const autoRefreshTimeout = useRef(null);
 
@@ -67,16 +69,33 @@ export default function JenkinsDeployment({ project }) {
     }
   }, [project.id, isJenkinsConfigured]);
 
+  const fetchAvailableBuilds = useCallback(async () => {
+    if (!isJenkinsConfigured()) return;
+    
+    try {
+      setLoadingBuilds(true);
+      const response = await jenkinsAPI.getRecentBuilds(project.id, 20);
+      if (response.data.success && response.data.builds) {
+        setAvailableBuilds(response.data.builds);
+      }
+    } catch (error) {
+      console.error('Error fetching available builds:', error);
+    } finally {
+      setLoadingBuilds(false);
+    }
+  }, [project.id, isJenkinsConfigured]);
+
   useEffect(() => {
     if (project) {
       fetchEnvironments();
       fetchBuildStatus();
+      fetchAvailableBuilds();
     }
     return () => {
       if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
       if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
     };
-  }, [project, fetchEnvironments, fetchBuildStatus]);
+  }, [project, fetchEnvironments, fetchBuildStatus, fetchAvailableBuilds]);
 
   const startAutoRefreshBuildStatus = () => {
     if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
@@ -393,6 +412,27 @@ export default function JenkinsDeployment({ project }) {
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 {showLogs ? 'Hide Logs' : 'View Logs'}
               </button>
+              
+              {availableBuilds.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Available builds:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {availableBuilds.slice(0, 5).map((build) => (
+                      <span
+                        key={build.number}
+                        className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      >
+                        #{build.number}
+                      </span>
+                    ))}
+                    {availableBuilds.length > 5 && (
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        +{availableBuilds.length - 5} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {showLogs && (

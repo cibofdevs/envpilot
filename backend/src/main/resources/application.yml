@@ -133,7 +133,7 @@ management:
       base-path: /actuator
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
       show-components: always
   health:
     defaults:
