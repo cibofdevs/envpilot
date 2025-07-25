@@ -26,7 +26,6 @@ export default function JenkinsDeployment({ project }) {
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [availableBuilds, setAvailableBuilds] = useState([]);
-  const [loadingBuilds, setLoadingBuilds] = useState(false);
   const autoRefreshInterval = useRef(null);
   const autoRefreshTimeout = useRef(null);
 
@@ -73,15 +72,12 @@ export default function JenkinsDeployment({ project }) {
     if (!isJenkinsConfigured()) return;
     
     try {
-      setLoadingBuilds(true);
       const response = await jenkinsAPI.getRecentBuilds(project.id, 20);
       if (response.data.success && response.data.builds) {
         setAvailableBuilds(response.data.builds);
       }
     } catch (error) {
       console.error('Error fetching available builds:', error);
-    } finally {
-      setLoadingBuilds(false);
     }
   }, [project.id, isJenkinsConfigured]);
 
