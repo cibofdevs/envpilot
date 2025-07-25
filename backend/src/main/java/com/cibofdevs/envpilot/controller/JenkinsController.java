@@ -206,8 +206,7 @@ public class JenkinsController {
      * Get last build status for a project
      */
     @GetMapping("/status/{projectId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> getBuildStatus(@PathVariable Long projectId) {
+    public ResponseEntity<Map<String, Object>> getBuildStatus(@PathVariable Long projectId, Authentication authentication) {
         Optional<Project> projectOpt = projectService.getProjectById(projectId);
 
         if (projectOpt.isEmpty()) {
@@ -217,7 +216,34 @@ public class JenkinsController {
             return ResponseEntity.notFound().build();
         }
 
-        Map<String, Object> result = jenkinsService.getLastBuildStatus(projectOpt.get());
+        // Check user access to project
+        Project project = projectOpt.get();
+        UserDetailsServiceImpl.UserPrincipal userPrincipal = (UserDetailsServiceImpl.UserPrincipal) authentication.getPrincipal();
+        User.Role userRole = userPrincipal.getAuthorities().stream()
+            .map(authority -> {
+                String roleName = authority.getAuthority().replace("ROLE_", "");
+                return User.Role.valueOf(roleName);
+            })
+            .findFirst()
+            .orElse(User.Role.DEVELOPER);
+        
+        // Admin can access all projects
+        if (userRole != User.Role.ADMIN) {
+            // Check if user is assigned to this project
+            Long userId = userPrincipal.getId();
+            List<Project> userProjects = projectRepository.findProjectsByUserId(userId);
+            boolean hasAccess = userProjects.stream()
+                .anyMatch(userProject -> userProject.getId().equals(projectId));
+            
+            if (!hasAccess) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "Access denied. You don't have permission to access this project's build status.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+        }
+
+        Map<String, Object> result = jenkinsService.getLastBuildStatus(project);
 
         if ((Boolean) result.get("success")) {
             return ResponseEntity.ok(result);

@@ -77,7 +77,7 @@ spring:
         debug: false
 
 server:
-  port: 8080
+  port: 9095
   tomcat:
     threads:
       max: 200
@@ -123,3 +123,18 @@ springdoc:
     disable-swagger-default-url: true
   packages-to-scan: com.cibofdevs.envpilot.controller
   paths-to-match: /api/**
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+  health:
+    defaults:
+      enabled: true

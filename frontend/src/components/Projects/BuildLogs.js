@@ -31,7 +31,21 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
       }
     } catch (err) {
       console.error('Error fetching build logs:', err);
-      setError('Failed to fetch build logs');
+      let errorMessage = 'Failed to fetch build logs';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Build not found. The specified build number may not exist.';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please check Jenkins credentials.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Access denied. Please check Jenkins permissions.';
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

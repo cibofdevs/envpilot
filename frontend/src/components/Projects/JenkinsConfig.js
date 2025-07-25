@@ -91,9 +91,23 @@ export default function JenkinsConfig({ project, onUpdate }) {
       }
     } catch (error) {
       console.error('Error saving Jenkins config:', error);
+      let errorMessage = 'Failed to save Jenkins configuration';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Invalid configuration data. Please check your input.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied. You don\'t have permission to update Jenkins configuration.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
       setMessage({
         type: 'error',
-        text: error.response?.data?.message || 'Failed to save Jenkins configuration'
+        text: errorMessage
       });
     } finally {
       setSaving(false);
@@ -127,9 +141,23 @@ export default function JenkinsConfig({ project, onUpdate }) {
       }
     } catch (error) {
       console.error('Error testing Jenkins connection:', error);
+      let errorMessage = 'Failed to test Jenkins connection';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Job not found. Please check Jenkins job configuration.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please check Jenkins credentials.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied. Please check Jenkins permissions.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
       setTestResult({
         type: 'error',
-        message: error.response?.data?.message || 'Failed to test Jenkins connection'
+        message: errorMessage
       });
     } finally {
       setTesting(false);

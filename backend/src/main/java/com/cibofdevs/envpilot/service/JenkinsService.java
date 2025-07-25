@@ -203,7 +203,15 @@ public class JenkinsService {
 
         } catch (HttpClientErrorException e) {
             result.put("success", false);
-            result.put("message", "Jenkins API error: " + e.getMessage());
+            if (e.getStatusCode().value() == 404) {
+                result.put("message", "Job not found. Please check Jenkins job configuration.");
+            } else if (e.getStatusCode().value() == 401) {
+                result.put("message", "Authentication failed. Please check Jenkins credentials.");
+            } else if (e.getStatusCode().value() == 403) {
+                result.put("message", "Access denied. Please check Jenkins permissions.");
+            } else {
+                result.put("message", "Jenkins API error: " + e.getMessage());
+            }
             result.put("statusCode", e.getStatusCode().value());
         } catch (Exception e) {
             result.put("success", false);
@@ -312,7 +320,15 @@ public class JenkinsService {
 
         } catch (HttpClientErrorException e) {
             result.put("success", false);
-            result.put("message", "Jenkins API error: " + e.getMessage());
+            if (e.getStatusCode().value() == 404) {
+                result.put("message", "Build not found. The specified build number may not exist.");
+            } else if (e.getStatusCode().value() == 401) {
+                result.put("message", "Authentication failed. Please check Jenkins credentials.");
+            } else if (e.getStatusCode().value() == 403) {
+                result.put("message", "Access denied. Please check Jenkins permissions.");
+            } else {
+                result.put("message", "Jenkins API error: " + e.getMessage());
+            }
             result.put("statusCode", e.getStatusCode().value());
         } catch (Exception e) {
             result.put("success", false);
