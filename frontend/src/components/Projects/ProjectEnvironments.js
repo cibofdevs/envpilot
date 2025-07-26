@@ -211,32 +211,7 @@ export default function ProjectEnvironments({ project }) {
     }
   }, [project.id, lastBuildProjectId]);
 
-  // Auto-refresh build number for card notification
-  useEffect(() => {
-    const refreshBuildNumber = async () => {
-      if (lastBuildNumber && lastBuildProjectId === project.id) {
-        try {
-          console.log(`🔄 Auto-refreshing build number for project ${project.name} (ID: ${project.id})`);
-          const response = await jenkinsAPI.getBuildStatus(project.id);
-          if (response.data.success && response.data.buildNumber) {
-            const currentBuildNumber = response.data.buildNumber;
-            if (currentBuildNumber !== lastBuildNumber) {
-              console.log(`🔄 Updating build number from ${lastBuildNumber} to ${currentBuildNumber}`);
-              setLastBuildNumber(currentBuildNumber);
-            }
-          }
-        } catch (error) {
-          console.error('Error refreshing build number:', error);
-        }
-      }
-    };
-
-    // Refresh every 5 seconds if card notification is active
-    if (lastBuildNumber && lastBuildProjectId === project.id) {
-      const interval = setInterval(refreshBuildNumber, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [lastBuildNumber, lastBuildProjectId, project.id, project.name]);
+  // Note: Auto-refresh build number mechanism removed since backend now returns correct build number
 
   const handleQuickDeploy = async (environmentId) => {
     if (!canDeploy()) {

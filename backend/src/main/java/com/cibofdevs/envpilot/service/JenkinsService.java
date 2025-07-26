@@ -144,13 +144,17 @@ public class JenkinsService {
                 
                 // Get build number from last build (since Location header is not available)
                 try {
-                    Thread.sleep(2000); // Wait for Jenkins to process the build
-                    Map<String, Object> lastBuild = getLastBuildStatus(project);
+                    // Wait longer for Jenkins to process the build and get the correct build number
+                    Thread.sleep(3000); // Increased wait time
                     
-                    if ((Boolean) lastBuild.get("success")) {
-                        Integer lastBuildNumber = (Integer) lastBuild.get("buildNumber");
-                        result.put("buildNumber", lastBuildNumber);
-                        System.out.println("✅ Build number retrieved: " + lastBuildNumber);
+                    // Get the next build number by checking current last build and incrementing
+                    Map<String, Object> currentLastBuild = getLastBuildStatus(project);
+                    
+                    if ((Boolean) currentLastBuild.get("success")) {
+                        Integer currentBuildNumber = (Integer) currentLastBuild.get("buildNumber");
+                        Integer nextBuildNumber = currentBuildNumber + 1;
+                        result.put("buildNumber", nextBuildNumber);
+                        System.out.println("✅ Next build number calculated: " + nextBuildNumber + " (current: " + currentBuildNumber + ")");
                     }
                 } catch (Exception e) {
                     System.out.println("❌ Could not get build number: " + e.getMessage());
