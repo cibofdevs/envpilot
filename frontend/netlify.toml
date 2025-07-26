@@ -4,8 +4,8 @@
 
 [context.production.environment]
   NODE_VERSION = "18"
-  REACT_APP_API_URL = "http://145.223.21.26:9095/api"
-  REACT_APP_WS_URL = "ws://145.223.21.26:9095"
+  REACT_APP_API_URL = "https://cibofdevs.cloud/api"
+  REACT_APP_WS_URL = "wss://cibofdevs.cloud"
   REACT_APP_APP_NAME = "EnvPilot"
   REACT_APP_APP_VERSION = "1.0.0"
   REACT_APP_ENABLE_MFA = "true"
