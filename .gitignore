@@ -2,8 +2,6 @@
 node_modules/
 build/
 dist/
-.env
-.env.*
 
 # Java / Spring Boot
 backend/target/
