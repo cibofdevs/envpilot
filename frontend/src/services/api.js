@@ -1,18 +1,17 @@
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+import { config } from '../config/config';
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: config.API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  // Timeout configuration for online database
-  timeout: 60000, // 60 seconds timeout
-  // Retry configuration
-  retry: 3,
-  retryDelay: 1000,
+  // Timeout configuration from environment
+  timeout: config.API_TIMEOUT,
+  // Retry configuration from environment
+  retry: config.API_RETRY_COUNT,
+  retryDelay: config.API_RETRY_DELAY,
 });
 
 // Request interceptor to add auth token
@@ -22,6 +21,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log request in debug mode
+    if (process.env.NODE_ENV === 'development' && config.DEBUG_MODE) {
+      console.log('API Request:', config.method?.toUpperCase(), config.url);
+    }
+    
     return config;
   },
   (error) => {
@@ -32,6 +37,10 @@ api.interceptors.request.use(
 // Response interceptor to handle auth errors
 api.interceptors.response.use(
   (response) => {
+    // Log response in debug mode
+    if (process.env.NODE_ENV === 'development' && config.DEBUG_MODE) {
+      console.log('API Response:', response.status, response.config.url);
+    }
     return response;
   },
   (error) => {
@@ -183,7 +192,7 @@ export const jenkinsAPI = {
   // Deploy project using backend deployment endpoint (which also triggers Jenkins)
   deployProject: (projectId, environmentId, version, notes, envName) => {
     const data = { 
-      version: version || '1.0.0' // Default version if not provided
+      version: version
     };
     if (notes) data.notes = notes;
     if (envName) data.envName = envName;

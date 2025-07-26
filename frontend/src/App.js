@@ -18,6 +18,7 @@ import About from './components/About/About';
 import systemAlertService from './services/systemAlertService';
 import notificationService from './services/notificationService';
 import { useAuth } from './contexts/AuthContext';
+import { config } from './config/config';
 
 // Initialize theme function
 const initializeTheme = () => {
@@ -165,18 +166,35 @@ function AppRoutes() {
 
 function App() {
   useEffect(() => {
+    // Log application info in debug mode
+    if (config.DEBUG_MODE) {
+      console.log(`${config.APP_NAME} v${config.APP_VERSION} initialized`);
+      console.log('Environment:', process.env.NODE_ENV);
+      console.log('API URL:', config.API_BASE_URL);
+      console.log('WebSocket URL:', config.WS_URL);
+      console.log('Feature Flags:', {
+        MFA: config.ENABLE_MFA,
+        RealTimeNotifications: config.ENABLE_REAL_TIME_NOTIFICATIONS,
+        Analytics: config.ENABLE_ANALYTICS
+      });
+    }
+
     // Initialize notification services
     const initializeNotifications = async () => {
       try {
         // Request notification permission on app start
         await notificationService.requestPermission();
-        // Start system monitoring
-        systemAlertService.startSystemMonitoring();
+        
+        // Start system monitoring if enabled
+        if (config.ENABLE_REAL_TIME_NOTIFICATIONS) {
+          systemAlertService.startSystemMonitoring();
+        }
+        
         // Show welcome notification if enabled
         if (notificationService.isEnabled()) {
           setTimeout(() => {
             systemAlertService.showInfo(
-              'Welcome to EnvPilot',
+              `Welcome to ${config.APP_NAME}`,
               'System notifications are now active. You can manage preferences in Settings.'
             );
           }, 2000);
@@ -185,10 +203,13 @@ function App() {
         console.error('Failed to initialize notifications:', error);
       }
     };
+    
     initializeNotifications();
+    
     // Cleanup on unmount
     return () => {
       systemAlertService.stopSystemMonitoring();
+      notificationService.disconnect();
     };
   }, []);
 

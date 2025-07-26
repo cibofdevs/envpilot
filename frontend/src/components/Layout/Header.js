@@ -183,7 +183,7 @@ export default function Header({ onMenuClick }) {
             </button>
             
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 ml-2 lg:ml-0 hidden md:block">
-              Multi-Environment Deployment
+              {config.APP_NAME}
             </h2>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
