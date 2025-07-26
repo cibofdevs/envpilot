@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide mixed content warning when dismissed */
+body.mixed-content-warning-hidden .mixed-content-warning {
+  display: none;
+}
+
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { settingsAPI } from '../services/api';
 import { useTheme } from '../hooks/useTheme';
+import { config } from '../config/config';
 
 const PreferencesContext = createContext();
 
@@ -27,6 +28,7 @@ export const PreferencesProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [mixedContentError, setMixedContentError] = useState(false);
 
   useEffect(() => {
     loadPreferences();
@@ -40,6 +42,16 @@ export const PreferencesProvider = ({ children }) => {
   }, [preferences.ui?.theme, theme, setThemeMode]);
 
   const loadPreferences = async () => {
+    // Check if we're in a Mixed Content situation (HTTPS frontend, HTTP backend)
+    const isMixedContent = window.location.protocol === 'https:' && config.API_BASE_URL.startsWith('http://');
+    
+    if (isMixedContent) {
+      console.warn('Preferences loading disabled due to Mixed Content: HTTPS frontend cannot connect to HTTP backend');
+      setMixedContentError(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await settingsAPI.getUserPreferences();
@@ -109,6 +121,7 @@ export const PreferencesProvider = ({ children }) => {
     preferences,
     loading,
     error,
+    mixedContentError,
     updatePreferences,
     updateTheme,
     updateDashboardPreferences,

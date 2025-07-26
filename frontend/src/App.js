@@ -19,6 +19,7 @@ import systemAlertService from './services/systemAlertService';
 import notificationService from './services/notificationService';
 import { useAuth } from './contexts/AuthContext';
 import { config } from './config/config';
+import MixedContentWarning from './components/Common/MixedContentWarning';
 
 // Initialize theme function
 const initializeTheme = () => {
@@ -213,6 +214,10 @@ function App() {
     };
   }, []);
 
+  // Check for Mixed Content situation
+  const isMixedContent = window.location.protocol === 'https:' && config.API_BASE_URL.startsWith('http://');
+  const showMixedContentWarning = isMixedContent && !document.body.classList.contains('mixed-content-warning-hidden');
+
   return (
     <ToastProvider>
       <PreferencesProvider>
@@ -220,6 +225,7 @@ function App() {
           <AppProvider>
             <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ThemeProvider>
+                {showMixedContentWarning && <MixedContentWarning />}
                 <AppRoutes />
               </ThemeProvider>
             </Router>

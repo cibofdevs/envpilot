@@ -16,9 +16,14 @@ class NotificationService {
       this.permission = Notification.permission;
     }
     
-    // Initialize WebSocket connection for real-time notifications if enabled
-    if (config.ENABLE_REAL_TIME_NOTIFICATIONS) {
+    // Check if we're in a Mixed Content situation (HTTPS frontend, HTTP backend)
+    const isMixedContent = window.location.protocol === 'https:' && config.WS_URL.startsWith('ws://');
+    
+    // Initialize WebSocket connection for real-time notifications if enabled and not mixed content
+    if (config.ENABLE_REAL_TIME_NOTIFICATIONS && !isMixedContent) {
       this.initWebSocket();
+    } else if (isMixedContent) {
+      console.warn('WebSocket disabled due to Mixed Content: HTTPS frontend cannot connect to HTTP WebSocket');
     }
   }
 

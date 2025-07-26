@@ -3,7 +3,10 @@ import notificationService from './notificationService';
 
 class SystemAlertService {
   constructor() {
-    this.isEnabled = config.ENABLE_REAL_TIME_NOTIFICATIONS;
+    // Check if we're in a Mixed Content situation (HTTPS frontend, HTTP backend)
+    const isMixedContent = window.location.protocol === 'https:' && config.API_BASE_URL.startsWith('http://');
+    
+    this.isEnabled = config.ENABLE_REAL_TIME_NOTIFICATIONS && !isMixedContent;
     this.monitoringInterval = null;
     this.alertTypes = {
       deployment: 'deployment',
@@ -13,9 +16,11 @@ class SystemAlertService {
       environment: 'environment'
     };
     
-    // Initialize monitoring if enabled
+    // Initialize monitoring if enabled and not mixed content
     if (this.isEnabled) {
       this.startSystemMonitoring();
+    } else if (isMixedContent) {
+      console.warn('System monitoring disabled due to Mixed Content: HTTPS frontend cannot connect to HTTP backend');
     }
   }
 

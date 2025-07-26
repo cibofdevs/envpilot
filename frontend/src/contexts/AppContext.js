@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { settingsAPI } from '../services/api';
+import { config } from '../config/config';
 
 const AppContext = createContext();
 
@@ -12,11 +13,22 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }) => {
-  const [appName, setAppName] = useState('Multi-Project Environment Manager');
-  const [appVersion, setAppVersion] = useState('v1.0.0');
+  const [appName, setAppName] = useState(config.APP_NAME || 'Multi-Project Environment Manager');
+  const [appVersion, setAppVersion] = useState(config.APP_VERSION || 'v1.0.0');
   const [loading, setLoading] = useState(true);
+  const [mixedContentError, setMixedContentError] = useState(false);
 
   const loadAppSettings = async () => {
+    // Check if we're in a Mixed Content situation (HTTPS frontend, HTTP backend)
+    const isMixedContent = window.location.protocol === 'https:' && config.API_BASE_URL.startsWith('http://');
+    
+    if (isMixedContent) {
+      console.warn('App settings loading disabled due to Mixed Content: HTTPS frontend cannot connect to HTTP backend');
+      setMixedContentError(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       // Try to get app info from the new endpoint that's accessible by all users
       const response = await settingsAPI.getAppInfo();
@@ -53,6 +65,7 @@ export const AppProvider = ({ children }) => {
     updateAppName,
     updateAppVersion,
     loading,
+    mixedContentError,
     reloadAppSettings: loadAppSettings
   };
 
