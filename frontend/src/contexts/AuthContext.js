@@ -101,6 +101,11 @@ export const AuthProvider = ({ children }) => {
       return 'Service temporarily unavailable. Please try again later.';
     }
     
+    // Handle Mixed Content error
+    if (error.mixedContentError || error.message?.includes('Mixed Content')) {
+      return 'Security error: Frontend and backend must use the same protocol (HTTP or HTTPS). Please contact administrator.';
+    }
+    
     // Handle network errors
     if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
       return 'Cannot connect to server. Please check your internet connection.';

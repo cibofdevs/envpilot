@@ -46,9 +46,22 @@ api.interceptors.response.use(
   (error) => {
     console.error('API Error:', error.config?.url, error.response?.status, error.response?.data);
     
+    // Handle Mixed Content error
+    if (error.message && error.message.includes('Mixed Content')) {
+      console.error('Mixed Content Error: Frontend is served over HTTPS but trying to access HTTP backend');
+      console.error('Please ensure backend is configured with HTTPS or use HTTP for frontend');
+      error.mixedContentError = true;
+    }
+    
     // Handle timeout errors
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       console.error('Request timeout - database connection may be slow');
+    }
+    
+    // Handle network errors
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network Error: Unable to connect to backend server');
+      console.error('Please check if backend server is running and accessible');
     }
     
     if (error.response?.status === 401) {
