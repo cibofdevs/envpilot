@@ -7,6 +7,7 @@ import com.cibofdevs.envpilot.dto.PasswordChangeRequest;
 import com.cibofdevs.envpilot.service.SystemSettingService;
 import com.cibofdevs.envpilot.service.FeatureFlagService;
 import com.cibofdevs.envpilot.service.EmailService;
+import com.cibofdevs.envpilot.service.JenkinsBuildMonitorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -53,6 +54,9 @@ public class SettingsController {
 
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private JenkinsBuildMonitorService jenkinsBuildMonitorService;
 
     // System Settings (Admin only)
     @GetMapping("/system")
@@ -421,6 +425,8 @@ public class SettingsController {
         return ResponseEntity.ok(response);
     }
 
+
+
     @GetMapping("/system-info")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -438,6 +444,17 @@ public class SettingsController {
         response.put("freeMemory", Runtime.getRuntime().freeMemory());
         response.put("maxMemory", Runtime.getRuntime().maxMemory());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/jenkins-monitoring")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+        summary = "Get Jenkins Build Monitoring Stats",
+        description = "Retrieve real-time Jenkins build monitoring statistics."
+    )
+    public ResponseEntity<Map<String, Object>> getJenkinsMonitoringStats() {
+        Map<String, Object> stats = jenkinsBuildMonitorService.getMonitoringStats();
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/system-monitoring")

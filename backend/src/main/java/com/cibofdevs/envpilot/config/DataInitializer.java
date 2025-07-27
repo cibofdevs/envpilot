@@ -8,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
     @Autowired
@@ -18,6 +20,8 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private SystemSettingService systemSettingService;
+    
+
 
     @Autowired
     private ProjectRepository projectRepository;
@@ -36,8 +40,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // Initialize default settings
         systemSettingService.initializeDefaultSettings();
         
+
+        
+        // Check if users exist
         if (userRepository.count() == 0) {
             createSampleUsers();
         }

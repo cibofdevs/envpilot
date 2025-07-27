@@ -64,21 +64,8 @@ public class DeploymentStatusEventListener {
         // Send real-time deployment status update
         realTimeNotificationService.sendDeploymentStatusUpdate(event.getDeployment());
         
-        // Send email notification if enabled
-        if (featureFlagService.isEmailNotificationsEnabled()) {
-            try {
-                System.out.println("📧 Sending SUCCESS email notification for deployment: " + event.getDeployment().getId());
-                emailService.sendDeploymentSuccessEmail(
-                    event.getDeployment().getTriggeredBy(),
-                    event.getDeployment()
-                );
-                System.out.println("✅ SUCCESS email sent successfully for deployment: " + event.getDeployment().getId());
-            } catch (Exception e) {
-                System.err.println("❌ Failed to send SUCCESS email for deployment " + event.getDeployment().getId() + ": " + e.getMessage());
-            }
-        } else {
-            System.out.println("🚫 Email notifications disabled via feature flag");
-        }
+        // Email notification will be handled by Jenkins Build Monitor Service
+        System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
     }
 
     private void handleFailedDeployment(DeploymentStatusEvent event) {
@@ -87,21 +74,8 @@ public class DeploymentStatusEventListener {
         // Send real-time deployment status update
         realTimeNotificationService.sendDeploymentStatusUpdate(event.getDeployment());
         
-        // Send email notification if enabled
-        if (featureFlagService.isEmailNotificationsEnabled()) {
-            try {
-                System.out.println("📧 Sending FAILURE email notification for deployment: " + event.getDeployment().getId());
-                emailService.sendDeploymentFailureEmail(
-                    event.getDeployment().getTriggeredBy(),
-                    event.getDeployment()
-                );
-                System.out.println("✅ FAILURE email sent successfully for deployment: " + event.getDeployment().getId());
-            } catch (Exception e) {
-                System.err.println("❌ Failed to send FAILURE email for deployment " + event.getDeployment().getId() + ": " + e.getMessage());
-            }
-        } else {
-            System.out.println("🚫 Email notifications disabled via feature flag");
-        }
+        // Email notification will be handled by Jenkins Build Monitor Service
+        System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
     }
     
     // Cleanup method to prevent memory leaks

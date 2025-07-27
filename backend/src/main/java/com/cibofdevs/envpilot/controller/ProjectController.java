@@ -12,6 +12,7 @@ import com.cibofdevs.envpilot.service.JenkinsService;
 import com.cibofdevs.envpilot.service.FeatureFlagService;
 import com.cibofdevs.envpilot.service.NotificationService;
 import com.cibofdevs.envpilot.service.EmailService;
+import com.cibofdevs.envpilot.service.JenkinsBuildMonitorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -66,6 +67,9 @@ public class ProjectController {
 
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private JenkinsBuildMonitorService jenkinsBuildMonitorService;
 
     @GetMapping
     @Operation(
@@ -451,38 +455,20 @@ public class ProjectController {
             if (buildNumber != null) {
                 String buildUrl = (String) jenkinsResult.get("buildUrl");
                 deploymentService.updateJenkinsBuildInfo(deployment.getId(), buildNumber, buildUrl);
+                
+                // Start monitoring the build
+                jenkinsBuildMonitorService.startMonitoring(
+                    deployment.getId(),
+                    projectOpt.get().getName(),
+                    projectOpt.get().getJenkinsJobName(),
+                    projectOpt.get().getJenkinsUrl(),
+                    buildNumber
+                );
             }
             
-            // Create bell notification for deployment triggered
-            try {
-                String projectName = projectOpt.get().getName();
-                String envName = environmentOpt.get().getName();
-                String deployVersion = deploymentRequest.getVersion() != null ? deploymentRequest.getVersion() : "latest";
-                String buildNumberText = buildNumber != null ? " (Build #" + buildNumber + ")" : "";
-                
-                notificationService.createNotification(
-                    triggeredBy,
-                    "🚀 Deployment Triggered",
-                    String.format("Deployment of project '%s' to %s with version %s%s has been successfully triggered in Jenkins", 
-                        projectName, envName, deployVersion, buildNumberText),
-                    "info"
-                );
-                
-                                        System.out.println("🔔 Bell notification created for deployment trigger");
-                        System.out.println("   User: " + triggeredBy.getName());
-                        System.out.println("   Project: " + projectName);
-                        System.out.println("   Environment: " + envName);
-                        System.out.println("   Version: " + deployVersion);
-                        System.out.println("   Build Number: " + buildNumber);
-                        
-                        // Note: Email notifications will be sent when deployment is completed
-                        // (SUCCESS/FAILED) in DeploymentService.updateDeploymentStatusFromJenkins()
-                        System.out.println("📧 Email notifications will be sent when deployment completes");
-                        
-                    } catch (Exception e) {
-                        System.err.println("❌ Failed to create deployment trigger notification: " + e.getMessage());
-                        // Don't crash the application if notification creation fails
-                    }
+            // Note: Bell notification will only be created when deployment is completed (SUCCESS/FAILED)
+            // to avoid spam notifications during trigger phase
+            System.out.println("📧 Bell notification will be created when deployment completes");
             
         } else {
             jenkinsSuccess = false;

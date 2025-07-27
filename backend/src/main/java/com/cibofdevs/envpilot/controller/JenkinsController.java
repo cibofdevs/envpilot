@@ -171,30 +171,9 @@ public class JenkinsController {
         );
 
         if ((Boolean) result.get("success")) {
-            // Create bell notification for successful Jenkins job trigger
-            try {
-                String projectName = projectOpt.get().getName();
-                String envName = environmentOpt.get().getName();
-                String deployVersion = version != null ? version : "latest";
-                
-                notificationService.createNotification(
-                    currentUser,
-                    "Jenkins Deployment Triggered",
-                    String.format("Deployment of project '%s' to %s with version %s has been successfully triggered in Jenkins", 
-                        projectName, envName, deployVersion),
-                    "info"
-                );
-                
-                System.out.println("🔔 Bell notification created for Jenkins deployment trigger");
-                System.out.println("   User: " + currentUser.getName());
-                System.out.println("   Project: " + projectName);
-                System.out.println("   Environment: " + envName);
-                System.out.println("   Version: " + deployVersion);
-                
-            } catch (Exception e) {
-                System.err.println("❌ Failed to create Jenkins deployment notification: " + e.getMessage());
-                // Don't crash the application if notification creation fails
-            }
+            // Note: Bell notification will only be created when deployment is completed (SUCCESS/FAILED)
+            // to avoid spam notifications during trigger phase
+            System.out.println("📧 Bell notification will be created when deployment completes");
             
             return ResponseEntity.ok(result);
         } else {

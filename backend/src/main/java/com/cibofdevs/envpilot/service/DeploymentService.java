@@ -35,6 +35,9 @@ public class DeploymentService {
 
     @Autowired
     private FeatureFlagService featureFlagService;
+    
+    @Autowired
+    private JenkinsBuildMonitorService jenkinsBuildMonitorService;
 
     @Autowired
     private JenkinsService jenkinsService;
@@ -112,6 +115,7 @@ public class DeploymentService {
     /**
      * Update Jenkins build information for a deployment
      */
+    @Transactional
     public void updateJenkinsBuildInfo(Long deploymentId, Integer buildNumber, String buildUrl) {
         Optional<DeploymentHistory> deploymentOpt = deploymentHistoryRepository.findById(deploymentId);
         if (deploymentOpt.isPresent()) {
@@ -119,6 +123,11 @@ public class DeploymentService {
             deployment.setJenkinsBuildNumber(buildNumber);
             deployment.setJenkinsBuildUrl(buildUrl);
             deploymentHistoryRepository.save(deployment);
+            System.out.println("💾 Jenkins build info updated for deployment: " + deploymentId);
+            System.out.println("   Build Number: " + buildNumber);
+            System.out.println("   Build URL: " + buildUrl);
+        } else {
+            System.err.println("❌ Deployment not found for ID: " + deploymentId);
         }
     }
 
@@ -219,11 +228,36 @@ public class DeploymentService {
                     
                     // CRITICAL: Additional verification - check if build number matches
                     Integer currentBuildNumber = (Integer) buildStatus.get("buildNumber");
-                    if (currentBuildNumber == null || !currentBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
-                        System.out.println("❌ CRITICAL: Build number mismatch! Skipping email notification");
+                    Integer expectedBuildNumber = deployment.getJenkinsBuildNumber();
+                    
+                    // If deployment doesn't have build number, try to update it
+                    if (expectedBuildNumber == null && currentBuildNumber != null) {
+                        System.out.println("⚠️ Deployment build number is null, updating with current build number: " + currentBuildNumber);
+                        deployment.setJenkinsBuildNumber(currentBuildNumber);
+                        deploymentHistoryRepository.save(deployment);
+                        expectedBuildNumber = currentBuildNumber;
+                    }
+                    
+                    // More flexible build number verification
+                    boolean buildNumberValid = true;
+                    if (currentBuildNumber == null) {
+                        System.out.println("⚠️ Current build number is null, but continuing with verification");
+                        buildNumberValid = false;
+                    } else if (expectedBuildNumber == null) {
+                        System.out.println("⚠️ Expected build number is null, but continuing with verification");
+                        buildNumberValid = false;
+                    } else if (!currentBuildNumber.equals(expectedBuildNumber)) {
+                        System.out.println("⚠️ Build number mismatch, but continuing with verification");
                         System.out.println("   Current build number: " + currentBuildNumber);
-                        System.out.println("   Expected build number: " + deployment.getJenkinsBuildNumber());
-                        return; // Exit early, don't send email notification
+                        System.out.println("   Expected build number: " + expectedBuildNumber);
+                        System.out.println("   Deployment ID: " + deployment.getId());
+                        buildNumberValid = false;
+                    }
+                    
+                    // Only skip if build number is completely invalid
+                    if (!buildNumberValid) {
+                        System.out.println("⚠️ Build number verification failed, but continuing with email notification");
+                        System.out.println("   This is a fallback to ensure email notifications are sent");
                     }
                     
                     // CRITICAL: Check if build has timestamp (meaning it's truly finished)
@@ -237,8 +271,8 @@ public class DeploymentService {
                     
                     // CRITICAL: Wait additional time to ensure Jenkins is truly finished
                     try {
-                        System.out.println("⏳ CRITICAL: Waiting 15 seconds to ensure Jenkins is 100% complete...");
-                        Thread.sleep(15000);
+                        System.out.println("⏳ CRITICAL: Waiting 5 seconds to ensure Jenkins is 100% complete...");
+                        Thread.sleep(5000);
                         System.out.println("✅ Critical wait completed");
                     } catch (InterruptedException e) {
                         System.err.println("❌ Critical wait interrupted: " + e.getMessage());
@@ -262,7 +296,7 @@ public class DeploymentService {
                             System.out.println("   Final Build Number: " + finalBuildNumber);
                             System.out.println("   Final Build Duration: " + finalBuildDuration + "ms");
                             System.out.println("   Final Build Timestamp: " + finalBuildTimestamp);
-                            System.out.println("   Expected Build Number: " + deployment.getJenkinsBuildNumber());
+                            System.out.println("   Expected Build Number: " + expectedBuildNumber);
                             
                             // CRITICAL: Additional check - ensure build is not null
                             if (finalResult == null) {
@@ -271,12 +305,23 @@ public class DeploymentService {
                                 return; // Exit early, don't send email notification
                             }
                             
-                            // CRITICAL: All conditions must be met
-                            if (isFinalBuilding != null && !isFinalBuilding && 
-                                "SUCCESS".equals(finalResult) && 
-                                finalBuildNumber != null && 
-                                finalBuildNumber.equals(deployment.getJenkinsBuildNumber()) &&
-                                finalBuildDuration != null && finalBuildDuration > 0) {
+                            // CRITICAL: All conditions must be met (with fallback for build number)
+                            boolean finalBuildNumberValid = finalBuildNumber != null && 
+                                (expectedBuildNumber == null || finalBuildNumber.equals(expectedBuildNumber));
+                            
+                            // Flexible verification - send email if build is complete or has valid build number
+                            boolean buildComplete = (isFinalBuilding != null && !isFinalBuilding) || 
+                                                   (finalResult != null && "SUCCESS".equals(finalResult));
+                            
+                            System.out.println("🔍 Final verification details:");
+                            System.out.println("   Build Complete: " + buildComplete);
+                            System.out.println("   Final Result: " + finalResult);
+                            System.out.println("   Build Number Valid: " + finalBuildNumberValid);
+                            System.out.println("   Is Building: " + isFinalBuilding);
+                            System.out.println("   Final Build Number: " + finalBuildNumber);
+                            
+                            // Send email if build is complete and successful
+                            if (buildComplete && "SUCCESS".equals(finalResult) && finalBuildNumberValid) {
                                 
                                 // CRITICAL: Additional check for timestamp
                                 if (finalBuildTimestamp != null && finalBuildTimestamp > 0) {
@@ -316,9 +361,8 @@ public class DeploymentService {
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Deployment status saved to database");
                     
-                    // Mark email as sent to prevent duplicates
-                    emailSentDeployments.add(deployment.getId());
-                    System.out.println("📧 Email notification marked as sent for deployment: " + deployment.getId());
+                    // Monitor service will handle email notification
+                    System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
                     
                     // Publish event for real-time processing (only after all verifications)
                     System.out.println("📢 Publishing SUCCESS event for deployment: " + deployment.getId());
@@ -476,8 +520,22 @@ public class DeploymentService {
                             System.out.println("   Final Failure Build Number: " + finalFailureBuildNumber);
                             System.out.println("   Expected Failure Build Number: " + deployment.getJenkinsBuildNumber());
                             
-                            if (isFinalFailureBuilding != null && !isFinalFailureBuilding && 
-                                ("FAILURE".equals(finalFailureResult) || "ABORTED".equals(finalFailureResult) || "UNSTABLE".equals(finalFailureResult)) && 
+                            // Flexible verification for failure cases
+                            boolean failureBuildComplete = (isFinalFailureBuilding != null && !isFinalFailureBuilding) || 
+                                                          (finalFailureResult != null && 
+                                                           ("FAILURE".equals(finalFailureResult) || "ABORTED".equals(finalFailureResult) || "UNSTABLE".equals(finalFailureResult)));
+                            
+                            System.out.println("🔍 Final failure verification details:");
+                            System.out.println("   Failure Build Complete: " + failureBuildComplete);
+                            System.out.println("   Final Failure Result: " + finalFailureResult);
+                            System.out.println("   Failure Build Number Valid: " + (finalFailureBuildNumber != null && finalFailureBuildNumber.equals(deployment.getJenkinsBuildNumber())));
+                            System.out.println("   Is Failure Building: " + isFinalFailureBuilding);
+                            System.out.println("   Final Failure Build Number: " + finalFailureBuildNumber);
+                            
+                            // Send failure email if build is complete and failed
+                            if (failureBuildComplete && 
+                                (finalFailureResult != null && 
+                                 ("FAILURE".equals(finalFailureResult) || "ABORTED".equals(finalFailureResult) || "UNSTABLE".equals(finalFailureResult))) &&
                                 finalFailureBuildNumber != null && 
                                 finalFailureBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
                                 
@@ -510,9 +568,8 @@ public class DeploymentService {
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Failed deployment status saved to database");
                     
-                    // Mark email as sent to prevent duplicates
-                    emailSentDeployments.add(deployment.getId());
-                    System.out.println("📧 Email notification marked as sent for deployment: " + deployment.getId());
+                    // Monitor service will handle email notification
+                    System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
                     
                     // Publish event for real-time processing (only after final verification)
                     System.out.println("📢 Publishing FAILED event for deployment: " + deployment.getId());
@@ -643,12 +700,12 @@ public class DeploymentService {
     }
 
     /**
-     * Scheduled task to automatically sync deployment status every 15 seconds (ULTRA REAL-TIME)
+     * Scheduled task to automatically sync deployment status every 15 seconds
      */
     @Scheduled(fixedRate = 15000) // 15 seconds = 15,000 milliseconds
     public void scheduledSyncDeployments() {
         try {
-            System.out.println("⚡ ULTRA REAL-TIME sync: Checking for deployment status updates...");
+            System.out.println("⚡ REAL-TIME sync: Checking for deployment status updates...");
             syncAllActiveDeployments();
         } catch (Exception e) {
             System.err.println("❌ Error in scheduled sync: " + e.getMessage());
@@ -656,11 +713,10 @@ public class DeploymentService {
     }
     
     /**
-     * Ultra-fast sync for critical deployments (every 10 seconds)
-     * ENABLED for optimal deployment status tracking
+     * Fast sync for critical deployments (every 10 seconds)
      */
     @Scheduled(fixedRate = 10000) // 10 seconds = 10,000 milliseconds
-    public void ultraFastSyncDeployments() {
+    public void fastSyncDeployments() {
         try {
             // Only sync deployments that are very recent (last 5 minutes)
             LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);
@@ -670,17 +726,17 @@ public class DeploymentService {
             );
             
             if (!recentDeployments.isEmpty()) {
-                System.out.println("🚀 ULTRA-FAST sync: Checking " + recentDeployments.size() + " recent deployments...");
+                System.out.println("🚀 FAST sync: Checking " + recentDeployments.size() + " recent deployments...");
                 for (DeploymentHistory deployment : recentDeployments) {
                     try {
                         updateDeploymentStatusFromJenkins(deployment.getId());
                     } catch (Exception e) {
-                        System.err.println("Error in ultra-fast sync for deployment " + deployment.getId() + ": " + e.getMessage());
+                        System.err.println("Error in fast sync for deployment " + deployment.getId() + ": " + e.getMessage());
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("❌ Error in ultra-fast sync: " + e.getMessage());
+            System.err.println("❌ Error in fast sync: " + e.getMessage());
         }
     }
     

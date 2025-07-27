@@ -58,6 +58,13 @@ public class EmailService {
             System.out.println("   To: " + user.getEmail());
             System.out.println("   Subject: Deployment Successful - " + deployment.getProject().getName());
             System.out.println("   Content-Type: HTML");
+            System.out.println("   From: " + fromEmail);
+            System.out.println("   SMTP Auth: " + smtpAuth);
+            System.out.println("   Deployment ID: " + deployment.getId());
+            System.out.println("   Project: " + deployment.getProject().getName());
+            System.out.println("   Environment: " + deployment.getEnvironment().getName());
+            System.out.println("   Version: " + deployment.getVersion());
+            System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
             
         } catch (Exception e) {
             System.err.println("❌ Failed to send deployment success email: " + e.getMessage());
@@ -99,6 +106,13 @@ public class EmailService {
             System.out.println("   To: " + user.getEmail());
             System.out.println("   Subject: Deployment Failed - " + deployment.getProject().getName());
             System.out.println("   Content-Type: HTML");
+            System.out.println("   From: " + fromEmail);
+            System.out.println("   SMTP Auth: " + smtpAuth);
+            System.out.println("   Deployment ID: " + deployment.getId());
+            System.out.println("   Project: " + deployment.getProject().getName());
+            System.out.println("   Environment: " + deployment.getEnvironment().getName());
+            System.out.println("   Version: " + deployment.getVersion());
+            System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
             
         } catch (Exception e) {
             System.err.println("❌ Failed to send deployment failure email: " + e.getMessage());
