@@ -419,25 +419,51 @@ export default function ProjectEnvironments({ project }) {
     );
   };
 
+  // Sort environments in fixed order: development, staging, production
+  const sortEnvironments = (envs) => {
+    const order = ['development', 'staging', 'production'];
+    return envs.sort((a, b) => {
+      const aIndex = order.indexOf(a.name.toLowerCase());
+      const bIndex = order.indexOf(b.name.toLowerCase());
+      
+      // If both environments are in the predefined order, sort by that order
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      
+      // If only one is in the predefined order, put it first
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      
+      // If neither is in the predefined order, sort alphabetically
+      return a.name.localeCompare(b.name);
+    });
+  };
+
   // Filter environments based on user role and assignments
   const getFilteredEnvironments = () => {
+    let filteredEnvs;
+    
     // Admin can see all environments
     if (isAdmin()) {
-      return environments;
+      filteredEnvs = environments;
     }
-
     // For DEVELOPER and QA roles, only show environments they are assigned to
-    if (user?.role === 'DEVELOPER' || user?.role === 'QA') {
+    else if (user?.role === 'DEVELOPER' || user?.role === 'QA') {
       const userAssignments = assignments.filter(assignment => 
         assignment.userId === user.id && assignment.status === 'ACTIVE'
       );
       
       const assignedEnvironmentIds = userAssignments.map(assignment => assignment.environmentId);
-      return environments.filter(environment => assignedEnvironmentIds.includes(environment.id));
+      filteredEnvs = environments.filter(environment => assignedEnvironmentIds.includes(environment.id));
     }
-
     // For other roles, show all environments (fallback)
-    return environments;
+    else {
+      filteredEnvs = environments;
+    }
+    
+    // Sort the filtered environments in fixed order
+    return sortEnvironments(filteredEnvs);
   };
 
   if (loading) {

@@ -136,16 +136,8 @@ export default function JenkinsDeployment({ project }) {
       if (response.data.success) {
         showSuccess(response.data.message);
         
-        // Show deployment started notification
-        const selectedEnvObj = environments.find(env => env.id.toString() === selectedEnvironment);
-        const envName = selectedEnvObj ? selectedEnvObj.name : 'Unknown';
-        const deployVersion = version || 'latest';
-        
-        notificationService.showSystemAlert(
-          '🚀 Deployment Triggered',
-          `Deployment of project '${project.name}' to ${envName} with version ${deployVersion} has been successfully triggered in Jenkins`,
-          'info'
-        );
+        // Note: Bell notification will only be shown when deployment is completed (SUCCESS/FAILED)
+        // to avoid spam notifications during trigger phase
         
         // Save the successfully deployed environment
         saveSelectedEnvironment(selectedEnvironment);

@@ -11,6 +11,7 @@ const ProjectDeployments = ({ projectId }) => {
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize] = useState(5);
+  const [activeDeployments, setActiveDeployments] = useState(new Set());
 
   const loadDeployments = useCallback(async () => {
     if (!projectId) {
@@ -21,7 +22,40 @@ const ProjectDeployments = ({ projectId }) => {
     try {
       setLoading(true);
       const response = await projectsAPI.getProjectDeployments(projectId);
-      setDeployments(response.data);
+      const fetchedDeployments = response.data;
+      
+      // Load active deployments from localStorage
+      const storedActiveDeployments = localStorage.getItem(`activeDeployments_${projectId}`);
+      let storedDeployments = [];
+      if (storedActiveDeployments) {
+        try {
+          storedDeployments = JSON.parse(storedActiveDeployments);
+        } catch (e) {
+          console.error('Failed to parse stored active deployments:', e);
+        }
+      }
+      
+      // Merge fetched deployments with stored active deployments
+      const mergedDeployments = [...fetchedDeployments];
+      
+      // Add stored active deployments that are not in fetched deployments
+      storedDeployments.forEach(storedDeployment => {
+        const exists = fetchedDeployments.find(d => d.id === storedDeployment.id);
+        if (!exists && (storedDeployment.status === 'PENDING' || storedDeployment.status === 'IN_PROGRESS')) {
+          mergedDeployments.unshift(storedDeployment); // Add to beginning
+        }
+      });
+      
+      // Update active deployments set
+      const newActiveDeployments = new Set();
+      mergedDeployments.forEach(deployment => {
+        if (deployment.status === 'PENDING' || deployment.status === 'IN_PROGRESS') {
+          newActiveDeployments.add(deployment.id);
+        }
+      });
+      setActiveDeployments(newActiveDeployments);
+      
+      setDeployments(mergedDeployments);
     } catch (err) {
       setError('Failed to load deployments');
     } finally {
@@ -33,14 +67,85 @@ const ProjectDeployments = ({ projectId }) => {
     if (projectId) {
       loadDeployments();
     }
-  }, [projectId, loadDeployments]);
+    
+    // Cleanup function to remove active deployments from localStorage when component unmounts
+    return () => {
+      if (projectId) {
+        // Only remove if there are no active deployments
+        if (activeDeployments.size === 0) {
+          localStorage.removeItem(`activeDeployments_${projectId}`);
+        }
+      }
+    };
+  }, [projectId, loadDeployments, activeDeployments.size]);
+
+  // Check for new active deployments after initial load
+  useEffect(() => {
+    if (deployments.length > 0 && activeDeployments.size === 0) {
+      // Check if there are any active deployments in the current list
+      const hasActive = deployments.some(d => 
+        d.status === 'PENDING' || d.status === 'IN_PROGRESS'
+      );
+      
+      if (hasActive) {
+        // Update active deployments set
+        const newActiveDeployments = new Set();
+        deployments.forEach(deployment => {
+          if (deployment.status === 'PENDING' || deployment.status === 'IN_PROGRESS') {
+            newActiveDeployments.add(deployment.id);
+          }
+        });
+        setActiveDeployments(newActiveDeployments);
+        
+        // Store in localStorage
+        const activeDeploymentsToStore = deployments.filter(d => 
+          d.status === 'PENDING' || d.status === 'IN_PROGRESS'
+        );
+        localStorage.setItem(`activeDeployments_${projectId}`, JSON.stringify(activeDeploymentsToStore));
+      }
+    }
+  }, [deployments, activeDeployments.size, projectId]);
 
   const handleRefresh = async () => {
     if (!projectId) return;
     try {
       setRefreshing(true);
       const response = await projectsAPI.getProjectDeployments(projectId);
-      setDeployments(response.data);
+      const fetchedDeployments = response.data;
+      
+      // Load active deployments from localStorage
+      const storedActiveDeployments = localStorage.getItem(`activeDeployments_${projectId}`);
+      let storedDeployments = [];
+      if (storedActiveDeployments) {
+        try {
+          storedDeployments = JSON.parse(storedActiveDeployments);
+        } catch (e) {
+          console.error('Failed to parse stored active deployments:', e);
+        }
+      }
+      
+      // Merge fetched deployments with stored active deployments
+      const mergedDeployments = [...fetchedDeployments];
+      
+      // Add stored active deployments that are not in fetched deployments
+      storedDeployments.forEach(storedDeployment => {
+        const exists = fetchedDeployments.find(d => d.id === storedDeployment.id);
+        if (!exists && (storedDeployment.status === 'PENDING' || storedDeployment.status === 'IN_PROGRESS')) {
+          mergedDeployments.unshift(storedDeployment); // Add to beginning
+        }
+      });
+      
+      // Update active deployments set
+      const newActiveDeployments = new Set();
+      mergedDeployments.forEach(deployment => {
+        if (deployment.status === 'PENDING' || deployment.status === 'IN_PROGRESS') {
+          newActiveDeployments.add(deployment.id);
+        }
+      });
+      setActiveDeployments(newActiveDeployments);
+      
+      setDeployments(mergedDeployments);
+      
       // Show success notification
       notificationService.showSystemAlert(
         'Deployment History Updated',
@@ -71,40 +176,91 @@ const ProjectDeployments = ({ projectId }) => {
         const response = await projectsAPI.getProjectDeployments(projectId);
         const newDeployments = response.data;
         
+        // Merge with current deployments to preserve active ones
+        const currentDeployments = [...deployments];
+        const updatedDeployments = [...newDeployments];
+        
+        // Add current active deployments that are not in new deployments
+        currentDeployments.forEach(currentDeployment => {
+          if ((currentDeployment.status === 'PENDING' || currentDeployment.status === 'IN_PROGRESS') &&
+              !newDeployments.find(d => d.id === currentDeployment.id)) {
+            updatedDeployments.unshift(currentDeployment);
+          }
+        });
+        
         // Check for status changes and show notifications
-        newDeployments.forEach(newDeployment => {
-          const oldDeployment = deployments.find(d => d.id === newDeployment.id);
-          if (oldDeployment && oldDeployment.status !== newDeployment.status) {
+        updatedDeployments.forEach(updatedDeployment => {
+          const oldDeployment = deployments.find(d => d.id === updatedDeployment.id);
+          
+          // Check for new deployments that are active
+          if (!oldDeployment && (updatedDeployment.status === 'PENDING' || updatedDeployment.status === 'IN_PROGRESS')) {
+            console.log(`🆕 New active deployment detected: ${updatedDeployment.id} (${updatedDeployment.status})`);
+          }
+          
+          // Check for status changes
+          if (oldDeployment && oldDeployment.status !== updatedDeployment.status) {
+            console.log(`🔄 Status changed for deployment ${updatedDeployment.id}: ${oldDeployment.status} → ${updatedDeployment.status}`);
+            
             // Status changed - show notification
-            if (newDeployment.status === 'SUCCESS') {
+            if (updatedDeployment.status === 'SUCCESS') {
               // Show browser notification
-              notificationService.showDeploymentNotification(newDeployment);
+              notificationService.showDeploymentNotification(updatedDeployment);
               
               // Show success toast
               notificationService.showSystemAlert(
                 '🚀 Deployment Successful!',
-                `Deployment of project '${newDeployment.project.name}' to ${newDeployment.environment.name} with version ${newDeployment.version} has been successfully completed in Jenkins`,
+                `Deployment of project '${updatedDeployment.project.name}' to ${updatedDeployment.environment.name} with version ${updatedDeployment.version} has been successfully completed in Jenkins`,
                 'success'
               );
-            } else if (newDeployment.status === 'FAILED') {
+              
+              // Remove from active deployments
+              setActiveDeployments(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(updatedDeployment.id);
+                return newSet;
+              });
+            } else if (updatedDeployment.status === 'FAILED') {
               // Show browser notification
               notificationService.showSystemAlert(
                 '❌ Deployment Failed',
-                `Deployment of project '${newDeployment.project.name}' to ${newDeployment.environment.name} with version ${newDeployment.version} failed in Jenkins`,
+                `Deployment of project '${updatedDeployment.project.name}' to ${updatedDeployment.environment.name} with version ${updatedDeployment.version} failed in Jenkins`,
                 'error'
               );
-            } else if (newDeployment.status === 'IN_PROGRESS') {
-              // Show in progress notification
-              notificationService.showSystemAlert(
-                '⏳ Deployment In Progress',
-                `Deployment of project '${newDeployment.project.name}' to ${newDeployment.environment.name} with version ${newDeployment.version} is being processed in Jenkins`,
-                'info'
-              );
+              
+              // Remove from active deployments
+              setActiveDeployments(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(updatedDeployment.id);
+                return newSet;
+              });
             }
+            // Note: No notification for IN_PROGRESS status to avoid spam
+            // Only show notifications for SUCCESS and FAILED statuses
+          }
+          
+          // Check for build number updates (even if status hasn't changed)
+          if (oldDeployment && 
+              (!oldDeployment.jenkinsBuildNumber && updatedDeployment.jenkinsBuildNumber)) {
+            console.log(`🔢 Build number updated for deployment ${updatedDeployment.id}: ${updatedDeployment.jenkinsBuildNumber}`);
           }
         });
         
-        setDeployments(newDeployments);
+        // Update active deployments set
+        const newActiveDeployments = new Set();
+        updatedDeployments.forEach(deployment => {
+          if (deployment.status === 'PENDING' || deployment.status === 'IN_PROGRESS') {
+            newActiveDeployments.add(deployment.id);
+          }
+        });
+        setActiveDeployments(newActiveDeployments);
+        
+        // Store active deployments in localStorage
+        const activeDeploymentsToStore = updatedDeployments.filter(d => 
+          d.status === 'PENDING' || d.status === 'IN_PROGRESS'
+        );
+        localStorage.setItem(`activeDeployments_${projectId}`, JSON.stringify(activeDeploymentsToStore));
+        
+        setDeployments(updatedDeployments);
       } catch (err) {
         console.error('Failed to check deployment status:', err);
         // Don't show error to user for background sync operations
@@ -112,34 +268,43 @@ const ProjectDeployments = ({ projectId }) => {
       }
     };
 
-    // Check every 3 seconds if there are active deployments (more frequent for real-time feel)
-    const hasActiveDeployments = deployments.some(d => 
-      d.status === 'PENDING' || d.status === 'IN_PROGRESS'
-    );
+    // Always run monitoring to detect new deployments and update existing ones
+    const interval = setInterval(checkDeploymentStatus, 3000);
+    return () => clearInterval(interval);
+  }, [deployments, projectId, activeDeployments]);
 
-    if (hasActiveDeployments) {
-      const interval = setInterval(checkDeploymentStatus, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [deployments, projectId]);
-
-  // Auto-refresh deployment history every 10 seconds to ensure build numbers are up-to-date
+  // Auto-refresh deployment history every 60 seconds to ensure build numbers are up-to-date
+  // This runs independently of the monitoring to provide fallback updates
   useEffect(() => {
     const autoRefreshDeployments = async () => {
       if (!projectId) return;
       try {
         console.log('🔄 Auto-refreshing deployment history for project:', projectId);
         const response = await projectsAPI.getProjectDeployments(projectId);
-        setDeployments(response.data);
+        const fetchedDeployments = response.data;
+        
+        // Merge with current deployments to preserve active ones
+        const currentDeployments = [...deployments];
+        const updatedDeployments = [...fetchedDeployments];
+        
+        // Add current active deployments that are not in fetched deployments
+        currentDeployments.forEach(currentDeployment => {
+          if ((currentDeployment.status === 'PENDING' || currentDeployment.status === 'IN_PROGRESS') &&
+              !fetchedDeployments.find(d => d.id === currentDeployment.id)) {
+            updatedDeployments.unshift(currentDeployment);
+          }
+        });
+        
+        setDeployments(updatedDeployments);
       } catch (err) {
         console.error('Failed to auto-refresh deployment history:', err);
       }
     };
 
-    // Auto-refresh every 10 seconds to ensure build numbers are always current
-    const interval = setInterval(autoRefreshDeployments, 10000);
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(autoRefreshDeployments, 60000);
     return () => clearInterval(interval);
-  }, [projectId]);
+  }, [projectId, deployments]);
 
   // Pagination logic
   const totalPages = Math.ceil(deployments.length / pageSize);
@@ -226,9 +391,13 @@ const ProjectDeployments = ({ projectId }) => {
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       Environment: {deployment.environment.name}
                     </p>
-                    {deployment.jenkinsBuildNumber && (
+                    {(deployment.jenkinsBuildNumber || deployment.buildNumber) ? (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Build #{deployment.jenkinsBuildNumber}
+                        Build #{deployment.jenkinsBuildNumber || deployment.buildNumber}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                        Build #... (waiting for Jenkins)
                       </p>
                     )}
                     {deployment.notes && (
