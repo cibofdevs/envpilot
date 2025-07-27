@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { jenkinsAPI, projectsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Common/Toast';
-import notificationService from '../../services/notificationService';
 import { 
   PlayIcon, 
   CheckCircleIcon, 
