@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
+import { DeploymentProvider } from './contexts/DeploymentContext';
 import { ToastProvider } from './components/Common/Toast';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Login from './components/Auth/Login';
@@ -223,12 +224,14 @@ function App() {
       <PreferencesProvider>
         <AuthProvider>
           <AppProvider>
-            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <ThemeProvider>
-                {showMixedContentWarning && <MixedContentWarning />}
-                <AppRoutes />
-              </ThemeProvider>
-            </Router>
+            <DeploymentProvider>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <ThemeProvider>
+                  {showMixedContentWarning && <MixedContentWarning />}
+                  <AppRoutes />
+                </ThemeProvider>
+              </Router>
+            </DeploymentProvider>
           </AppProvider>
         </AuthProvider>
       </PreferencesProvider>

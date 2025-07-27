@@ -6,6 +6,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.19",
     "@heroicons/react": "^2.2.0",
+    "@stomp/stompjs": "^7.1.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -16,6 +17,7 @@
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^6.8.1",
     "react-scripts": "5.0.1",
+    "sockjs-client": "^1.6.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

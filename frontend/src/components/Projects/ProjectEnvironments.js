@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { projectsAPI, jenkinsAPI, environmentsAPI, environmentAssignmentAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDeployment } from '../../contexts/DeploymentContext';
 import { useToast } from '../Common/Toast';
 import EnvironmentStatusBadge from '../Common/EnvironmentStatusBadge';
 import BuildLogs from './BuildLogs';
@@ -47,6 +48,7 @@ const getStatusBadge = (status) => {
 
 export default function ProjectEnvironments({ project }) {
   const { canDeploy, canDeployToEnvironment, isAdmin, user } = useAuth();
+  const { triggerDeploymentRefresh, setLastDeploymentData } = useDeployment();
   const { showSuccess, showError } = useToast();
   const [environments, setEnvironments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -262,6 +264,27 @@ export default function ProjectEnvironments({ project }) {
           type: 'success', 
           message: `${response.data.message || 'Deployment triggered successfully!'} ${response.data.buildNumber ? `(Build #${response.data.buildNumber})` : ''}` 
         });
+        
+        // Create deployment data for immediate display
+        // Use a unique identifier that can be matched with the real deployment
+        const deploymentData = {
+          id: `temp_${Date.now()}`, // Temporary ID with prefix to avoid conflicts
+          version: version,
+          status: 'PENDING',
+          environment: envObj,
+          project: project,
+          triggeredBy: user,
+          createdAt: new Date().toISOString(),
+          notes: `Quick deploy to ${envObj?.name}`,
+          jenkinsBuildNumber: response.data.buildNumber,
+          isTemporary: true // Flag to identify temporary deployments
+        };
+        
+        // Set last deployment data for immediate display
+        setLastDeploymentData(deploymentData);
+        
+        // Trigger deployment refresh for the deployments tab
+        triggerDeploymentRefresh(project.id);
         
         // Refresh environment stats after successful deployment
         setTimeout(() => {

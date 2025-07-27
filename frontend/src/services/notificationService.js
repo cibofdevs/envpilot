@@ -1,4 +1,5 @@
 import { config } from '../config/config';
+import SockJS from 'sockjs-client';
 
 class NotificationService {
   constructor() {
@@ -29,10 +30,19 @@ class NotificationService {
 
   initWebSocket() {
     try {
-      this.wsConnection = new WebSocket(config.WS_URL + '/ws/notifications');
+      // Convert WebSocket URL to HTTP/HTTPS for SockJS
+      let wsUrl = config.WS_URL;
+      if (wsUrl.startsWith('ws://')) {
+        wsUrl = wsUrl.replace('ws://', 'http://');
+      } else if (wsUrl.startsWith('wss://')) {
+        wsUrl = wsUrl.replace('wss://', 'https://');
+      }
+      
+      console.log('🔌 Creating SockJS connection for notifications to:', wsUrl + '/ws');
+      this.wsConnection = new SockJS(wsUrl + '/ws');
       
       this.wsConnection.onopen = () => {
-        console.log('WebSocket connected for notifications');
+        console.log('✅ SockJS connected for notifications');
         this.reconnectAttempts = 0;
       };
       
