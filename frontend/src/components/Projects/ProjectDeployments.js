@@ -94,7 +94,7 @@ const ProjectDeployments = ({ projectId }) => {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, getLastDeployment]);
 
   useEffect(() => {
     if (projectId) {
@@ -242,6 +242,7 @@ const ProjectDeployments = ({ projectId }) => {
       console.error('   Error details:', error.message);
       console.error('   Falling back to polling only');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle WebSocket messages for deployment status updates
