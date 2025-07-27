@@ -24,6 +24,9 @@ public class DeploymentService {
     
     // Set for tracking deployments being processed (prevent duplicates)
     private final Set<Long> processingDeployments = Collections.synchronizedSet(new HashSet<>());
+    
+    // Set for tracking deployments that have already sent email notifications
+    private final Set<Long> emailSentDeployments = Collections.synchronizedSet(new HashSet<>());
     @Autowired
     private DeploymentHistoryRepository deploymentHistoryRepository;
 
@@ -137,6 +140,12 @@ public class DeploymentService {
             return;
         }
         
+        // Email notification prevention: check if email has already been sent
+        if (emailSentDeployments.contains(deploymentId)) {
+            System.out.println("⚠️ Email notification already sent for deployment " + deploymentId + ", skipping email sending");
+            return;
+        }
+        
         // Add deployment to processing set
         processingDeployments.add(deploymentId);
         System.out.println("🔒 Locked deployment " + deploymentId + " for processing");
@@ -183,74 +192,116 @@ public class DeploymentService {
                     System.out.println("   Project: " + deployment.getProject().getName());
                     System.out.println("   Environment: " + deployment.getEnvironment().getName());
                     
-                    // Double-check Jenkins is truly finished before proceeding
-                    boolean jenkinsTrulyFinished = false;
-                    int retryCount = 0;
-                    int maxRetries = 5;
-                    
-                    while (!jenkinsTrulyFinished && retryCount < maxRetries) {
-                        try {
-                            System.out.println("🔍 Checking if Jenkins build is truly finished (attempt " + (retryCount + 1) + "/" + maxRetries + ")");
-                            
-                            // Get current Jenkins status
-                            Map<String, Object> currentBuildStatus = jenkinsService.getLastBuildStatus(deployment.getProject());
-                            
-                            if ((Boolean) currentBuildStatus.get("success")) {
-                                String currentResult = (String) currentBuildStatus.get("result");
-                                Boolean isCurrentlyBuilding = (Boolean) currentBuildStatus.get("building");
-                                Integer currentBuildNumber = (Integer) currentBuildStatus.get("buildNumber");
-                                
-                                System.out.println("   Current Jenkins Result: " + currentResult);
-                                System.out.println("   Is Currently Building: " + isCurrentlyBuilding);
-                                System.out.println("   Current Build Number: " + currentBuildNumber);
-                                System.out.println("   Expected Build Number: " + deployment.getJenkinsBuildNumber());
-                                
-                                // Check if the build is truly finished
-                                if (isCurrentlyBuilding != null && !isCurrentlyBuilding && 
-                                    "SUCCESS".equals(currentResult) && 
-                                    currentBuildNumber != null && 
-                                    currentBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
-                                    
-                                    jenkinsTrulyFinished = true;
-                                    System.out.println("✅ Jenkins build confirmed as truly finished!");
-                                } else {
-                                    System.out.println("⏳ Jenkins build still in progress, waiting...");
-                                    try {
-                                        Thread.sleep(2000); // Wait 2 seconds before retry
-                                    } catch (InterruptedException ie) {
-                                        System.err.println("❌ Wait interrupted: " + ie.getMessage());
-                                        Thread.currentThread().interrupt();
-                                        break;
-                                    }
-                                    retryCount++;
-                                }
-                            } else {
-                                System.out.println("⚠️ Failed to get Jenkins status, retrying...");
-                                try {
-                                    Thread.sleep(2000);
-                                } catch (InterruptedException ie) {
-                                    System.err.println("❌ Wait interrupted: " + ie.getMessage());
-                                    Thread.currentThread().interrupt();
-                                    break;
-                                }
-                                retryCount++;
-                            }
-                        } catch (Exception e) {
-                            System.err.println("❌ Error checking Jenkins status: " + e.getMessage());
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException ie) {
-                                System.err.println("❌ Wait interrupted: " + ie.getMessage());
-                                Thread.currentThread().interrupt();
-                                break;
-                            }
-                            retryCount++;
-                        }
+                    // CRITICAL: Check if Jenkins is still building
+                    Boolean isCurrentlyBuilding = (Boolean) buildStatus.get("building");
+                    if (isCurrentlyBuilding != null && isCurrentlyBuilding) {
+                        System.out.println("❌ CRITICAL: Jenkins is still building! Skipping email notification");
+                        System.out.println("   Build is still in progress, will retry later");
+                        return; // Exit early, don't send email notification
                     }
                     
-                    if (!jenkinsTrulyFinished) {
-                        System.out.println("⚠️ Could not confirm Jenkins build completion after " + maxRetries + " attempts");
-                        System.out.println("   Proceeding with email notification anyway...");
+                    // CRITICAL: Additional check - ensure build result is not null
+                    String currentResult = (String) buildStatus.get("result");
+                    if (currentResult == null) {
+                        System.out.println("❌ CRITICAL: Build result is null! Skipping email notification");
+                        System.out.println("   Build is not truly finished yet");
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // CRITICAL: Check if build duration is valid (meaning build is truly finished)
+                    Long buildDuration = (Long) buildStatus.get("duration");
+                    if (buildDuration == null || buildDuration <= 0) {
+                        System.out.println("❌ CRITICAL: Build duration is invalid! Skipping email notification");
+                        System.out.println("   Build duration: " + buildDuration + "ms");
+                        System.out.println("   Build is not truly finished yet");
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // CRITICAL: Additional verification - check if build number matches
+                    Integer currentBuildNumber = (Integer) buildStatus.get("buildNumber");
+                    if (currentBuildNumber == null || !currentBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
+                        System.out.println("❌ CRITICAL: Build number mismatch! Skipping email notification");
+                        System.out.println("   Current build number: " + currentBuildNumber);
+                        System.out.println("   Expected build number: " + deployment.getJenkinsBuildNumber());
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // CRITICAL: Check if build has timestamp (meaning it's truly finished)
+                    Long buildTimestamp = (Long) buildStatus.get("timestamp");
+                    if (buildTimestamp == null || buildTimestamp <= 0) {
+                        System.out.println("❌ CRITICAL: Build timestamp is invalid! Skipping email notification");
+                        System.out.println("   Build timestamp: " + buildTimestamp);
+                        System.out.println("   Build is not truly finished yet");
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // CRITICAL: Wait additional time to ensure Jenkins is truly finished
+                    try {
+                        System.out.println("⏳ CRITICAL: Waiting 15 seconds to ensure Jenkins is 100% complete...");
+                        Thread.sleep(15000);
+                        System.out.println("✅ Critical wait completed");
+                    } catch (InterruptedException e) {
+                        System.err.println("❌ Critical wait interrupted: " + e.getMessage());
+                        return; // Exit early if interrupted
+                    }
+                    
+                    // CRITICAL: Final verification after wait
+                    try {
+                        System.out.println("🔍 CRITICAL: Final verification after wait...");
+                        Map<String, Object> finalBuildStatus = jenkinsService.getLastBuildStatus(deployment.getProject());
+                        
+                        if ((Boolean) finalBuildStatus.get("success")) {
+                            String finalResult = (String) finalBuildStatus.get("result");
+                            Boolean isFinalBuilding = (Boolean) finalBuildStatus.get("building");
+                            Integer finalBuildNumber = (Integer) finalBuildStatus.get("buildNumber");
+                            Long finalBuildDuration = (Long) finalBuildStatus.get("duration");
+                            Long finalBuildTimestamp = (Long) finalBuildStatus.get("timestamp");
+                            
+                            System.out.println("   Final Jenkins Result: " + finalResult);
+                            System.out.println("   Is Final Building: " + isFinalBuilding);
+                            System.out.println("   Final Build Number: " + finalBuildNumber);
+                            System.out.println("   Final Build Duration: " + finalBuildDuration + "ms");
+                            System.out.println("   Final Build Timestamp: " + finalBuildTimestamp);
+                            System.out.println("   Expected Build Number: " + deployment.getJenkinsBuildNumber());
+                            
+                            // CRITICAL: Additional check - ensure build is not null
+                            if (finalResult == null) {
+                                System.out.println("❌ CRITICAL: Final verification failed - Build result is null");
+                                System.out.println("   Skipping email notification to prevent premature sending");
+                                return; // Exit early, don't send email notification
+                            }
+                            
+                            // CRITICAL: All conditions must be met
+                            if (isFinalBuilding != null && !isFinalBuilding && 
+                                "SUCCESS".equals(finalResult) && 
+                                finalBuildNumber != null && 
+                                finalBuildNumber.equals(deployment.getJenkinsBuildNumber()) &&
+                                finalBuildDuration != null && finalBuildDuration > 0) {
+                                
+                                // CRITICAL: Additional check for timestamp
+                                if (finalBuildTimestamp != null && finalBuildTimestamp > 0) {
+                                    System.out.println("✅ CRITICAL: All verification passed - Jenkins is truly finished!");
+                                    System.out.println("   Final build timestamp: " + finalBuildTimestamp);
+                                } else {
+                                    System.out.println("❌ CRITICAL: Final verification failed - Build timestamp is invalid");
+                                    System.out.println("   Final build timestamp: " + finalBuildTimestamp);
+                                    System.out.println("   Skipping email notification to prevent premature sending");
+                                    return; // Exit early, don't send email notification
+                                }
+                            } else {
+                                System.out.println("❌ CRITICAL: Final verification failed - Jenkins build not truly finished");
+                                System.out.println("   Skipping email notification to prevent premature sending");
+                                return; // Exit early, don't send email notification
+                            }
+                        } else {
+                            System.out.println("❌ CRITICAL: Final verification failed - could not get Jenkins status");
+                            System.out.println("   Skipping email notification to prevent premature sending");
+                            return; // Exit early, don't send email notification
+                        }
+                    } catch (Exception e) {
+                        System.err.println("❌ CRITICAL: Final verification error: " + e.getMessage());
+                        System.out.println("   Skipping email notification to prevent premature sending");
+                        return; // Exit early, don't send email notification
                     }
                     
                     // Now update deployment status
@@ -265,16 +316,11 @@ public class DeploymentService {
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Deployment status saved to database");
                     
-                    // Additional safety delay
-                    try {
-                        System.out.println("⏳ Final safety delay of 2 seconds...");
-                        Thread.sleep(2000);
-                        System.out.println("✅ Safety delay completed");
-                    } catch (InterruptedException e) {
-                        System.err.println("❌ Safety delay interrupted: " + e.getMessage());
-                    }
+                    // Mark email as sent to prevent duplicates
+                    emailSentDeployments.add(deployment.getId());
+                    System.out.println("📧 Email notification marked as sent for deployment: " + deployment.getId());
                     
-                    // Publish event for real-time processing
+                    // Publish event for real-time processing (only after all verifications)
                     System.out.println("📢 Publishing SUCCESS event for deployment: " + deployment.getId());
                     eventPublisher.publishEvent(new com.cibofdevs.envpilot.event.DeploymentStatusEvent(
                         this, deployment, oldStatus, "SUCCESS"
@@ -330,10 +376,150 @@ public class DeploymentService {
                     }
                     
                 } else if ("FAILURE".equals(jenkinsStatus) || "ABORTED".equals(jenkinsStatus) || "UNSTABLE".equals(jenkinsStatus)) {
+                    System.out.println("❌ Jenkins deployment FAILURE detected for deployment: " + deployment.getId());
+                    System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
+                    System.out.println("   Project: " + deployment.getProject().getName());
+                    System.out.println("   Environment: " + deployment.getEnvironment().getName());
+                    
+                    // Verify Jenkins failure is truly finished before proceeding
+                    boolean jenkinsFailureTrulyFinished = false;
+                    int failureRetryCount = 0;
+                    int maxFailureRetries = 10;
+                    
+                    while (!jenkinsFailureTrulyFinished && failureRetryCount < maxFailureRetries) {
+                        try {
+                            System.out.println("🔍 Checking if Jenkins failure is truly finished (attempt " + (failureRetryCount + 1) + "/" + maxFailureRetries + ")");
+                            
+                            // Get current Jenkins status
+                            Map<String, Object> currentFailureStatus = jenkinsService.getLastBuildStatus(deployment.getProject());
+                            
+                            if ((Boolean) currentFailureStatus.get("success")) {
+                                String currentFailureResult = (String) currentFailureStatus.get("result");
+                                Boolean isCurrentlyFailureBuilding = (Boolean) currentFailureStatus.get("building");
+                                Integer currentFailureBuildNumber = (Integer) currentFailureStatus.get("buildNumber");
+                                
+                                System.out.println("   Current Jenkins Failure Result: " + currentFailureResult);
+                                System.out.println("   Is Currently Failure Building: " + isCurrentlyFailureBuilding);
+                                System.out.println("   Current Failure Build Number: " + currentFailureBuildNumber);
+                                System.out.println("   Expected Failure Build Number: " + deployment.getJenkinsBuildNumber());
+                                
+                                // Check if the failure build is truly finished
+                                if (isCurrentlyFailureBuilding != null && !isCurrentlyFailureBuilding && 
+                                    ("FAILURE".equals(currentFailureResult) || "ABORTED".equals(currentFailureResult) || "UNSTABLE".equals(currentFailureResult)) && 
+                                    currentFailureBuildNumber != null && 
+                                    currentFailureBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
+                                    
+                                    jenkinsFailureTrulyFinished = true;
+                                    System.out.println("✅ Jenkins failure confirmed as truly finished!");
+                                } else {
+                                    System.out.println("⏳ Jenkins failure still in progress, waiting...");
+                                    try {
+                                        Thread.sleep(3000); // Wait 3 seconds before retry
+                                    } catch (InterruptedException ie) {
+                                        System.err.println("❌ Wait interrupted: " + ie.getMessage());
+                                        Thread.currentThread().interrupt();
+                                        break;
+                                    }
+                                    failureRetryCount++;
+                                }
+                            } else {
+                                System.out.println("⚠️ Failed to get Jenkins failure status, retrying...");
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException ie) {
+                                    System.err.println("❌ Wait interrupted: " + ie.getMessage());
+                                    Thread.currentThread().interrupt();
+                                    break;
+                                }
+                                failureRetryCount++;
+                            }
+                        } catch (Exception e) {
+                            System.err.println("❌ Error checking Jenkins failure status: " + e.getMessage());
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ie) {
+                                System.err.println("❌ Wait interrupted: " + ie.getMessage());
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                            failureRetryCount++;
+                        }
+                    }
+                    
+                    if (!jenkinsFailureTrulyFinished) {
+                        System.out.println("⚠️ Could not confirm Jenkins failure completion after " + maxFailureRetries + " attempts");
+                        System.out.println("   Skipping email notification to ensure Jenkins failure is truly finished");
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // Additional safety delay for failure
+                    try {
+                        System.out.println("⏳ Final safety delay of 3 seconds for failure...");
+                        Thread.sleep(3000);
+                        System.out.println("✅ Safety delay for failure completed");
+                    } catch (InterruptedException e) {
+                        System.err.println("❌ Safety delay for failure interrupted: " + e.getMessage());
+                    }
+                    
+                    // Final verification for failure
+                    try {
+                        System.out.println("🔍 Final verification of Jenkins failure completion...");
+                        Map<String, Object> finalFailureStatus = jenkinsService.getLastBuildStatus(deployment.getProject());
+                        
+                        if ((Boolean) finalFailureStatus.get("success")) {
+                            String finalFailureResult = (String) finalFailureStatus.get("result");
+                            Boolean isFinalFailureBuilding = (Boolean) finalFailureStatus.get("building");
+                            Integer finalFailureBuildNumber = (Integer) finalFailureStatus.get("buildNumber");
+                            
+                            System.out.println("   Final Jenkins Failure Result: " + finalFailureResult);
+                            System.out.println("   Is Final Failure Building: " + isFinalFailureBuilding);
+                            System.out.println("   Final Failure Build Number: " + finalFailureBuildNumber);
+                            System.out.println("   Expected Failure Build Number: " + deployment.getJenkinsBuildNumber());
+                            
+                            if (isFinalFailureBuilding != null && !isFinalFailureBuilding && 
+                                ("FAILURE".equals(finalFailureResult) || "ABORTED".equals(finalFailureResult) || "UNSTABLE".equals(finalFailureResult)) && 
+                                finalFailureBuildNumber != null && 
+                                finalFailureBuildNumber.equals(deployment.getJenkinsBuildNumber())) {
+                                
+                                System.out.println("✅ Final failure verification successful - Jenkins failure is truly finished!");
+                            } else {
+                                System.out.println("❌ Final failure verification failed - Jenkins failure not truly finished");
+                                System.out.println("   Skipping email notification to prevent premature sending");
+                                return; // Exit early, don't send email notification
+                            }
+                        } else {
+                            System.out.println("❌ Final failure verification failed - could not get Jenkins status");
+                            System.out.println("   Skipping email notification to prevent premature sending");
+                            return; // Exit early, don't send email notification
+                        }
+                    } catch (Exception e) {
+                        System.err.println("❌ Final failure verification error: " + e.getMessage());
+                        System.out.println("   Skipping email notification to prevent premature sending");
+                        return; // Exit early, don't send email notification
+                    }
+                    
+                    // Now update deployment status for failure
+                    String oldFailureStatus = deployment.getStatus().toString();
                     deployment.setStatus(DeploymentHistory.Status.FAILED);
                     deployment.setCompletedAt(LocalDateTime.now());
+                    
                     // Update environment status to error
                     environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ERROR);
+                    
+                    // Save deployment
+                    deploymentHistoryRepository.save(deployment);
+                    System.out.println("💾 Failed deployment status saved to database");
+                    
+                    // Mark email as sent to prevent duplicates
+                    emailSentDeployments.add(deployment.getId());
+                    System.out.println("📧 Email notification marked as sent for deployment: " + deployment.getId());
+                    
+                    // Publish event for real-time processing (only after final verification)
+                    System.out.println("📢 Publishing FAILED event for deployment: " + deployment.getId());
+                    eventPublisher.publishEvent(new com.cibofdevs.envpilot.event.DeploymentStatusEvent(
+                        this, deployment, oldFailureStatus, "FAILED"
+                    ));
+                    System.out.println("✅ FAILED event published successfully");
                     
                     // Create bell notification for failed deployment
                     try {
@@ -378,17 +564,9 @@ public class DeploymentService {
                         System.err.println("❌ Failed to notify project members about failure: " + e.getMessage());
                     }
                     
-                    // Send email notification to the user who triggered the deployment
-                    if (featureFlagService.isEmailNotificationsEnabled()) {
-                        try {
-                            emailService.sendDeploymentFailureEmail(deployment.getTriggeredBy(), deployment);
-                            System.out.println("📧 Email notification sent to " + deployment.getTriggeredBy().getEmail());
-                        } catch (Exception e) {
-                            System.err.println("❌ Failed to send email notification: " + e.getMessage());
-                        }
-                    } else {
-                        System.out.println("📧 Email notifications are disabled");
-                    }
+                    // Note: Email notification will be sent via DeploymentStatusEventListener
+                    // to prevent duplicate emails
+                    System.out.println("📧 Email notification will be sent via event listener");
                         
                     } catch (Exception e) {
                         System.err.println("❌ Failed to create deployment failure notification: " + e.getMessage());
@@ -479,6 +657,7 @@ public class DeploymentService {
     
     /**
      * Ultra-fast sync for critical deployments (every 10 seconds)
+     * ENABLED for optimal deployment status tracking
      */
     @Scheduled(fixedRate = 10000) // 10 seconds = 10,000 milliseconds
     public void ultraFastSyncDeployments() {
@@ -502,6 +681,20 @@ public class DeploymentService {
             }
         } catch (Exception e) {
             System.err.println("❌ Error in ultra-fast sync: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Cleanup email tracking set every hour to prevent memory leaks
+     */
+    @Scheduled(fixedRate = 3600000) // 1 hour = 3,600,000 milliseconds
+    public void cleanupEmailTracking() {
+        try {
+            int beforeSize = emailSentDeployments.size();
+            emailSentDeployments.clear();
+            System.out.println("🧹 Cleaned up email tracking set: " + beforeSize + " entries removed");
+        } catch (Exception e) {
+            System.err.println("❌ Error in email tracking cleanup: " + e.getMessage());
         }
     }
 }
