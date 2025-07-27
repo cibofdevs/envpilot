@@ -192,13 +192,36 @@ public class JenkinsBuildMonitorService {
                 
                 // Check if this is the build we're waiting for
                 if (buildNumber == monitor.expectedBuildNumber) {
-                                            if (!isBuilding && result != null) {
-                            // Build is complete, process the result
-                            processBuildCompletionWithTransaction(monitor, buildNumber, result, buildInfo);
-                            // Send email notification in separate transaction
-                            sendEmailNotification(monitor.deploymentId, buildNumber, result);
-                            return false; // Stop monitoring
+                    if (!isBuilding && result != null) {
+                        // Additional verification to ensure build is truly finished
+                        Long buildDuration = buildInfo.path("duration").asLong(0);
+                        Long buildTimestamp = buildInfo.path("timestamp").asLong(0);
+                        
+                        System.out.println("🔍 Additional verification for deployment " + monitor.deploymentId + ":");
+                        System.out.println("   Build Duration: " + buildDuration + "ms");
+                        System.out.println("   Build Timestamp: " + buildTimestamp);
+                        System.out.println("   Current Time: " + System.currentTimeMillis());
+                        
+                        // Verify build has duration and timestamp (indicating it's truly finished)
+                        if (buildDuration > 0 && buildTimestamp > 0) {
+                            // Additional safety check: ensure build timestamp is not too recent
+                            long timeSinceBuild = System.currentTimeMillis() - buildTimestamp;
+                            if (timeSinceBuild > 5000) { // At least 5 seconds since build finished
+                                System.out.println("✅ Build verification passed - Jenkins is truly finished!");
+                                // Build is complete, process the result
+                                processBuildCompletionWithTransaction(monitor, buildNumber, result, buildInfo);
+                                // Send email notification in separate transaction
+                                sendEmailNotification(monitor.deploymentId, buildNumber, result);
+                                return false; // Stop monitoring
+                            } else {
+                                System.out.println("⏳ Build finished too recently, waiting for safety delay...");
+                                return true; // Continue monitoring
+                            }
+                        } else {
+                            System.out.println("⚠️ Build verification failed - missing duration or timestamp");
+                            return true; // Continue monitoring
                         }
+                    }
                 } else if (buildNumber > monitor.expectedBuildNumber) {
                     // A newer build has started, check if our expected build is complete
                     String specificBuildUrl = monitor.jenkinsUrl + "/job/" + monitor.jenkinsJob + 
@@ -214,10 +237,33 @@ public class JenkinsBuildMonitorService {
                         String specificResult = specificBuildInfo.path("result").asText(null);
                         
                         if (!specificIsBuilding && specificResult != null) {
-                            processBuildCompletionWithTransaction(monitor, monitor.expectedBuildNumber, specificResult, specificBuildInfo);
-                            // Send email notification in separate transaction
-                            sendEmailNotification(monitor.deploymentId, monitor.expectedBuildNumber, specificResult);
-                            return false; // Stop monitoring
+                            // Additional verification to ensure build is truly finished
+                            Long specificBuildDuration = specificBuildInfo.path("duration").asLong(0);
+                            Long specificBuildTimestamp = specificBuildInfo.path("timestamp").asLong(0);
+                            
+                            System.out.println("🔍 Additional verification for specific build " + monitor.expectedBuildNumber + ":");
+                            System.out.println("   Build Duration: " + specificBuildDuration + "ms");
+                            System.out.println("   Build Timestamp: " + specificBuildTimestamp);
+                            System.out.println("   Current Time: " + System.currentTimeMillis());
+                            
+                            // Verify build has duration and timestamp (indicating it's truly finished)
+                            if (specificBuildDuration > 0 && specificBuildTimestamp > 0) {
+                                // Additional safety check: ensure build timestamp is not too recent
+                                long timeSinceBuild = System.currentTimeMillis() - specificBuildTimestamp;
+                                if (timeSinceBuild > 5000) { // At least 5 seconds since build finished
+                                    System.out.println("✅ Specific build verification passed - Jenkins is truly finished!");
+                                    processBuildCompletionWithTransaction(monitor, monitor.expectedBuildNumber, specificResult, specificBuildInfo);
+                                    // Send email notification in separate transaction
+                                    sendEmailNotification(monitor.deploymentId, monitor.expectedBuildNumber, specificResult);
+                                    return false; // Stop monitoring
+                                } else {
+                                    System.out.println("⏳ Specific build finished too recently, waiting for safety delay...");
+                                    return true; // Continue monitoring
+                                }
+                            } else {
+                                System.out.println("⚠️ Specific build verification failed - missing duration or timestamp");
+                                return true; // Continue monitoring
+                            }
                         }
                     }
                 }
@@ -322,7 +368,8 @@ public class JenkinsBuildMonitorService {
             // Email notification will be handled by separate method
             System.out.println("📧 Email notification will be handled by separate transaction");
             
-            // Publish event for real-time notification (after email is sent)
+            // Publish event for real-time notification (ONLY place where this should happen)
+            // This ensures notifications are sent only when Jenkins build is truly finished
             DeploymentStatusEvent event = new DeploymentStatusEvent(
                 this,
                 deployment,
@@ -332,6 +379,8 @@ public class JenkinsBuildMonitorService {
             
             eventPublisher.publishEvent(event);
             System.out.println("📢 Real-time notification event published for deployment: " + monitor.deploymentId);
+            System.out.println("   ✅ This is the ONLY place where deployment events are published");
+            System.out.println("   ✅ Ensures notifications are sent only when Jenkins is truly finished");
         }
     }
 

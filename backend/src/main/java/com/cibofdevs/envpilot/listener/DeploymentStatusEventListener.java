@@ -4,6 +4,10 @@ import com.cibofdevs.envpilot.event.DeploymentStatusEvent;
 import com.cibofdevs.envpilot.service.EmailService;
 import com.cibofdevs.envpilot.service.FeatureFlagService;
 import com.cibofdevs.envpilot.service.RealTimeNotificationService;
+import com.cibofdevs.envpilot.service.NotificationService;
+import com.cibofdevs.envpilot.service.ProjectAssignmentService;
+import com.cibofdevs.envpilot.model.User;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +29,12 @@ public class DeploymentStatusEventListener {
 
     @Autowired
     private RealTimeNotificationService realTimeNotificationService;
+    
+    @Autowired
+    private NotificationService notificationService;
+    
+    @Autowired
+    private ProjectAssignmentService projectAssignmentService;
     
     // Set for tracking email notifications to prevent duplicates
     private final Set<Long> processedEmailDeployments = Collections.synchronizedSet(new HashSet<>());
@@ -64,6 +74,54 @@ public class DeploymentStatusEventListener {
         // Send real-time deployment status update
         realTimeNotificationService.sendDeploymentStatusUpdate(event.getDeployment());
         
+        // Create bell notification for successful deployment
+        try {
+            String projectName = event.getDeployment().getProject().getName();
+            String envName = event.getDeployment().getEnvironment().getName();
+            String version = event.getDeployment().getVersion();
+            String buildNumberText = event.getDeployment().getJenkinsBuildNumber() != null ? 
+                " (Build #" + event.getDeployment().getJenkinsBuildNumber() + ")" : "";
+            
+            notificationService.createNotification(
+                event.getDeployment().getTriggeredBy(),
+                "🚀 Deployment Successful",
+                String.format("Deployment of project '%s' to %s with version %s%s has been successfully completed in Jenkins", 
+                    projectName, envName, version, buildNumberText),
+                "success"
+            );
+            
+            System.out.println("🔔 Bell notification created for successful deployment");
+            System.out.println("   User: " + event.getDeployment().getTriggeredBy().getName());
+            System.out.println("   Project: " + projectName);
+            System.out.println("   Environment: " + envName);
+            System.out.println("   Version: " + version);
+            System.out.println("   Build Number: " + event.getDeployment().getJenkinsBuildNumber());
+            
+            // Notify all users assigned to this project
+            try {
+                List<User> assignedUsers = projectAssignmentService.getUsersAssignedToProject(event.getDeployment().getProject().getId());
+                for (User assignedUser : assignedUsers) {
+                    // Skip if it's the same user who triggered the deployment
+                    if (!assignedUser.getId().equals(event.getDeployment().getTriggeredBy().getId())) {
+                        notificationService.createNotification(
+                            assignedUser,
+                            "🚀 Deployment Successful",
+                            String.format("Deployment of project '%s' to %s with version %s%s has been successfully completed by %s", 
+                                projectName, envName, version, buildNumberText, event.getDeployment().getTriggeredBy().getName()),
+                            "success"
+                        );
+                    }
+                }
+                System.out.println("🔔 Notified " + assignedUsers.size() + " users about successful deployment");
+            } catch (Exception e) {
+                System.err.println("❌ Failed to notify project members: " + e.getMessage());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Failed to create deployment success notification: " + e.getMessage());
+            // Don't crash the application if notification creation fails
+        }
+        
         // Email notification will be handled by Jenkins Build Monitor Service
         System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
     }
@@ -73,6 +131,54 @@ public class DeploymentStatusEventListener {
         
         // Send real-time deployment status update
         realTimeNotificationService.sendDeploymentStatusUpdate(event.getDeployment());
+        
+        // Create bell notification for failed deployment
+        try {
+            String projectName = event.getDeployment().getProject().getName();
+            String envName = event.getDeployment().getEnvironment().getName();
+            String version = event.getDeployment().getVersion();
+            String buildNumberText = event.getDeployment().getJenkinsBuildNumber() != null ? 
+                " (Build #" + event.getDeployment().getJenkinsBuildNumber() + ")" : "";
+            
+            notificationService.createNotification(
+                event.getDeployment().getTriggeredBy(),
+                "❌ Deployment Failed",
+                String.format("Deployment of project '%s' to %s with version %s%s failed in Jenkins", 
+                    projectName, envName, version, buildNumberText),
+                "error"
+            );
+            
+            System.out.println("🔔 Bell notification created for failed deployment");
+            System.out.println("   User: " + event.getDeployment().getTriggeredBy().getName());
+            System.out.println("   Project: " + projectName);
+            System.out.println("   Environment: " + envName);
+            System.out.println("   Version: " + version);
+            System.out.println("   Build Number: " + event.getDeployment().getJenkinsBuildNumber());
+            
+            // Notify all users assigned to this project about failure
+            try {
+                List<User> assignedUsers = projectAssignmentService.getUsersAssignedToProject(event.getDeployment().getProject().getId());
+                for (User assignedUser : assignedUsers) {
+                    // Skip if it's the same user who triggered the deployment
+                    if (!assignedUser.getId().equals(event.getDeployment().getTriggeredBy().getId())) {
+                        notificationService.createNotification(
+                            assignedUser,
+                            "❌ Deployment Failed",
+                            String.format("Deployment of project '%s' to %s with version %s%s failed by %s", 
+                                projectName, envName, version, buildNumberText, event.getDeployment().getTriggeredBy().getName()),
+                            "error"
+                        );
+                    }
+                }
+                System.out.println("🔔 Notified " + assignedUsers.size() + " users about failed deployment");
+            } catch (Exception e) {
+                System.err.println("❌ Failed to notify project members about failure: " + e.getMessage());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Failed to create deployment failure notification: " + e.getMessage());
+            // Don't crash the application if notification creation fails
+        }
         
         // Email notification will be handled by Jenkins Build Monitor Service
         System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");

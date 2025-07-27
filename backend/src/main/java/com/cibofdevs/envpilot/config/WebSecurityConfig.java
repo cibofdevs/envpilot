@@ -74,6 +74,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                     .requestMatchers("/api/test/**").permitAll()
                     .requestMatchers("/static/**").permitAll()
                     .requestMatchers("/api/auth/test-users").permitAll()
+                    .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
                     .anyRequest().authenticated()
             );
 

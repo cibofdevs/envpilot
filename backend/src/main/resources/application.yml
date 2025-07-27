@@ -111,6 +111,9 @@ logging:
     org.springframework.jdbc.core: DEBUG
     com.zaxxer.hikari.HikariConfig: DEBUG
     com.zaxxer.hikari.pool.HikariPool: DEBUG
+    # Reduce noise from HTTP parsing errors
+    org.apache.coyote.http11.Http11Processor: WARN
+    org.apache.coyote.http11.Http11InputBuffer: WARN
 
 springdoc:
   api-docs:

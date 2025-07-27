@@ -361,63 +361,15 @@ public class DeploymentService {
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Deployment status saved to database");
                     
-                    // Monitor service will handle email notification
-                    System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
+                    // Monitor service will handle email notification and event publishing
+                    System.out.println("📧 Email notification and event publishing will be handled by Jenkins Build Monitor Service");
                     
-                    // Publish event for real-time processing (only after all verifications)
-                    System.out.println("📢 Publishing SUCCESS event for deployment: " + deployment.getId());
-                    eventPublisher.publishEvent(new com.cibofdevs.envpilot.event.DeploymentStatusEvent(
-                        this, deployment, oldStatus, "SUCCESS"
-                    ));
-                    System.out.println("✅ SUCCESS event published successfully");
+                    // Note: Bell notification will be handled by Jenkins Build Monitor Service
+                    System.out.println("📧 Bell notification will be handled by Jenkins Build Monitor Service");
                     
-                    // Create bell notification for successful deployment
-                    try {
-                        String projectName = deployment.getProject().getName();
-                        String envName = deployment.getEnvironment().getName();
-                        String version = deployment.getVersion();
-                        String buildNumberText = deployment.getJenkinsBuildNumber() != null ? 
-                            " (Build #" + deployment.getJenkinsBuildNumber() + ")" : "";
-                        
-                        notificationService.createNotification(
-                            deployment.getTriggeredBy(),
-                            "🚀 Deployment Successful",
-                            String.format("Deployment of project '%s' to %s with version %s%s has been successfully completed in Jenkins", 
-                                projectName, envName, version, buildNumberText),
-                            "success"
-                        );
-                        
-                        System.out.println("🔔 Bell notification created for successful deployment");
-                        System.out.println("   User: " + deployment.getTriggeredBy().getName());
-                        System.out.println("   Project: " + projectName);
-                        System.out.println("   Environment: " + envName);
-                        System.out.println("   Version: " + version);
-                        System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
-                        
-                        // Notify all users assigned to this project
-                        try {
-                            List<User> assignedUsers = projectAssignmentService.getUsersAssignedToProject(deployment.getProject().getId());
-                            for (User assignedUser : assignedUsers) {
-                                // Skip if it's the same user who triggered the deployment
-                                if (!assignedUser.getId().equals(deployment.getTriggeredBy().getId())) {
-                                    notificationService.createNotification(
-                                        assignedUser,
-                                        "🚀 Deployment Successful",
-                                        String.format("Deployment of project '%s' to %s with version %s%s has been successfully completed by %s", 
-                                            projectName, envName, version, buildNumberText, deployment.getTriggeredBy().getName()),
-                                        "success"
-                                    );
-                                }
-                            }
-                            System.out.println("🔔 Notified " + assignedUsers.size() + " users about successful deployment");
-                        } catch (Exception e) {
-                            System.err.println("❌ Failed to notify project members: " + e.getMessage());
-                        }
-                        
-                    } catch (Exception e) {
-                        System.err.println("❌ Failed to create deployment success notification: " + e.getMessage());
-                        // Don't crash the application if notification creation fails
-                    }
+                    // IMPORTANT: DeploymentStatusEvent is ONLY published by JenkinsBuildMonitorService
+                    // This ensures notifications are sent only when Jenkins build is truly finished
+                    System.out.println("📢 DeploymentStatusEvent will be published by JenkinsBuildMonitorService only");
                     
                 } else if ("FAILURE".equals(jenkinsStatus) || "ABORTED".equals(jenkinsStatus) || "UNSTABLE".equals(jenkinsStatus)) {
                     System.out.println("❌ Jenkins deployment FAILURE detected for deployment: " + deployment.getId());
@@ -568,67 +520,15 @@ public class DeploymentService {
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Failed deployment status saved to database");
                     
-                    // Monitor service will handle email notification
-                    System.out.println("📧 Email notification will be handled by Jenkins Build Monitor Service");
+                    // Monitor service will handle email notification and event publishing
+                    System.out.println("📧 Email notification and event publishing will be handled by Jenkins Build Monitor Service");
                     
-                    // Publish event for real-time processing (only after final verification)
-                    System.out.println("📢 Publishing FAILED event for deployment: " + deployment.getId());
-                    eventPublisher.publishEvent(new com.cibofdevs.envpilot.event.DeploymentStatusEvent(
-                        this, deployment, oldFailureStatus, "FAILED"
-                    ));
-                    System.out.println("✅ FAILED event published successfully");
+                    // Note: Bell notification will be handled by Jenkins Build Monitor Service
+                    System.out.println("📧 Bell notification will be handled by Jenkins Build Monitor Service");
                     
-                    // Create bell notification for failed deployment
-                    try {
-                        String projectName = deployment.getProject().getName();
-                        String envName = deployment.getEnvironment().getName();
-                        String version = deployment.getVersion();
-                        String buildNumberText = deployment.getJenkinsBuildNumber() != null ? 
-                            " (Build #" + deployment.getJenkinsBuildNumber() + ")" : "";
-                        
-                        notificationService.createNotification(
-                            deployment.getTriggeredBy(),
-                            "❌ Deployment Failed",
-                            String.format("Deployment of project '%s' to %s with version %s%s failed in Jenkins", 
-                                projectName, envName, version, buildNumberText),
-                            "error"
-                        );
-                        
-                        System.out.println("🔔 Bell notification created for failed deployment");
-                        System.out.println("   User: " + deployment.getTriggeredBy().getName());
-                        System.out.println("   Project: " + projectName);
-                        System.out.println("   Environment: " + envName);
-                        System.out.println("   Version: " + version);
-                        System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
-                        
-                        // Notify all users assigned to this project about failure
-                        try {
-                            List<User> assignedUsers = projectAssignmentService.getUsersAssignedToProject(deployment.getProject().getId());
-                            for (User assignedUser : assignedUsers) {
-                                // Skip if it's the same user who triggered the deployment
-                                if (!assignedUser.getId().equals(deployment.getTriggeredBy().getId())) {
-                                    notificationService.createNotification(
-                                        assignedUser,
-                                        "❌ Deployment Failed",
-                                        String.format("Deployment of project '%s' to %s with version %s%s failed by %s", 
-                                            projectName, envName, version, buildNumberText, deployment.getTriggeredBy().getName()),
-                                        "error"
-                                    );
-                                }
-                            }
-                                                    System.out.println("🔔 Notified " + assignedUsers.size() + " users about failed deployment");
-                    } catch (Exception e) {
-                        System.err.println("❌ Failed to notify project members about failure: " + e.getMessage());
-                    }
-                    
-                    // Note: Email notification will be sent via DeploymentStatusEventListener
-                    // to prevent duplicate emails
-                    System.out.println("📧 Email notification will be sent via event listener");
-                        
-                    } catch (Exception e) {
-                        System.err.println("❌ Failed to create deployment failure notification: " + e.getMessage());
-                        // Don't crash the application if notification creation fails
-                    }
+                    // IMPORTANT: DeploymentStatusEvent is ONLY published by JenkinsBuildMonitorService
+                    // This ensures notifications are sent only when Jenkins build is truly finished
+                    System.out.println("📢 DeploymentStatusEvent will be published by JenkinsBuildMonitorService only");
                     
                 } else if ("BUILDING".equals(jenkinsStatus) || "IN_PROGRESS".equals(jenkinsStatus)) {
                     deployment.setStatus(DeploymentHistory.Status.IN_PROGRESS);
