@@ -292,3 +292,81 @@ body.mixed-content-warning-hidden .mixed-content-warning {
     @apply text-2xl sm:text-3xl;
   }
 }
+
+/* Pagination animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Pagination component animations */
+.pagination-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.pagination-item-enter {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.pagination-item-enter:nth-child(1) { animation-delay: 0ms; }
+.pagination-item-enter:nth-child(2) { animation-delay: 50ms; }
+.pagination-item-enter:nth-child(3) { animation-delay: 100ms; }
+.pagination-item-enter:nth-child(4) { animation-delay: 150ms; }
+.pagination-item-enter:nth-child(5) { animation-delay: 200ms; }
+
+/* Smooth transitions for pagination buttons */
+.pagination-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-button:hover {
+  transform: translateY(-1px);
+}
+
+.pagination-button:active {
+  transform: translateY(0);
+}
+
+/* Loading state for pagination */
+.pagination-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Responsive pagination */
+@media (max-width: 640px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    text-align: center;
+  }
+}
