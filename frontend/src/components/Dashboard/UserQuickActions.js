@@ -91,7 +91,7 @@ export default function UserQuickActions() {
     }
   ];
 
-  // Filter actions berdasarkan role user dan feature flags
+  // Filter actions based on user role and feature flags
   const availableActions = quickActions.filter(action => {
     const hasRole = action.showForRoles.includes(user?.role || 'USER');
     const hasFeatureFlag = !action.requiresFeatureFlag || analyticsEnabled;
