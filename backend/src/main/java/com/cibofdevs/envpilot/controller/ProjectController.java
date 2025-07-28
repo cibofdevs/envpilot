@@ -379,19 +379,19 @@ public class ProjectController {
         User triggeredBy = userRepository.findByEmail(userPrincipal.getUsername()).orElse(null);
         if (triggeredBy == null) {
             response.put("success", false);
-            response.put("message", "User tidak valid");
+            response.put("message", "Invalid user");
             return ResponseEntity.badRequest().body(response);
         }
 
-        // Validasi akses deployment berdasarkan role dan environment
+        // Validate deployment access based on role and environment
         String environmentName = environmentOpt.get().getName().toLowerCase();
         User.Role userRole = triggeredBy.getRole();
         
-        // Hanya ADMIN yang bisa deploy ke staging dan production
+        // Only ADMIN can deploy to staging and production
         if ((environmentName.equals("staging") || environmentName.equals("production")) && 
             userRole != User.Role.ADMIN) {
             response.put("success", false);
-            response.put("message", "Akses ditolak. Hanya Admin yang dapat deploy ke environment " + environmentName);
+            response.put("message", "Access denied. Only Admin can deploy to environment " + environmentName);
             return ResponseEntity.status(403).body(response);
         }
 
@@ -400,7 +400,7 @@ public class ProjectController {
             boolean hasAccess = projectService.hasUserAccessToProject(triggeredBy.getId(), id);
             if (!hasAccess) {
                 response.put("success", false);
-                response.put("message", "Akses ditolak. Anda tidak di-assign ke project ini");
+                response.put("message", "Access denied. You are not assigned to this project");
                 return ResponseEntity.status(403).body(response);
             }
         }
@@ -472,13 +472,13 @@ public class ProjectController {
             
         } else {
             jenkinsSuccess = false;
-            jenkinsMsg = "Deployment tercatat, tapi gagal trigger Jenkins: " + jenkinsResult.get("message");
-            System.err.println("Gagal trigger Jenkins: " + jenkinsResult.get("message"));
+            jenkinsMsg = "Deployment recorded, but failed to trigger Jenkins: " + jenkinsResult.get("message");
+            System.err.println("Failed to trigger Jenkins: " + jenkinsResult.get("message"));
         }
         } catch (Exception e) {
             jenkinsSuccess = false;
-            jenkinsMsg = "Deployment tercatat, tapi gagal trigger Jenkins: " + e.getMessage();
-            System.err.println("Gagal trigger Jenkins: " + e.getMessage());
+            jenkinsMsg = "Deployment recorded, but failed to trigger Jenkins: " + e.getMessage();
+            System.err.println("Failed to trigger Jenkins: " + e.getMessage());
         }
 
         response.put("success", jenkinsSuccess);

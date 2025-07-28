@@ -28,6 +28,9 @@ public interface DeploymentHistoryRepository extends JpaRepository<DeploymentHis
     // Find deployments by user who triggered them
     List<DeploymentHistory> findByTriggeredById(Long userId);
     
+    // Delete deployments by user who triggered them
+    void deleteByTriggeredById(Long userId);
+    
     // Find deployments by status
     List<DeploymentHistory> findByStatusIn(List<DeploymentHistory.Status> statuses);
     

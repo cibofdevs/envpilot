@@ -30,4 +30,7 @@ public interface EnvironmentAssignmentRepository extends JpaRepository<Environme
     // Find active assignments for a specific environment
     @Query("SELECT ea FROM EnvironmentAssignment ea WHERE ea.environment.id = ?1 AND ea.status = 'ACTIVE'")
     List<EnvironmentAssignment> findActiveAssignmentsByEnvironmentId(Long environmentId);
+    
+    // Delete all assignments for a specific user
+    void deleteByUserId(Long userId);
 }

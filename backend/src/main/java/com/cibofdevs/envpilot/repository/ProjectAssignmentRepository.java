@@ -21,4 +21,7 @@ public interface ProjectAssignmentRepository extends JpaRepository<ProjectAssign
     
     // Check if user is assigned to project
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
+    
+    // Delete all assignments for a specific user
+    void deleteByUserId(Long userId);
 }

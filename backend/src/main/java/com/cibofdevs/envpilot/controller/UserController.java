@@ -6,6 +6,7 @@ import com.cibofdevs.envpilot.dto.UserCreateRequest;
 import com.cibofdevs.envpilot.dto.UserUpdateRequest;
 import com.cibofdevs.envpilot.service.NotificationService;
 import com.cibofdevs.envpilot.service.FeatureFlagService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -54,6 +55,8 @@ public class UserController {
 
     @Autowired
     private FeatureFlagService featureFlagService;
+
+
 
     private static final String PROFILE_PHOTO_DIR = "uploads/profile-photos";
 
@@ -198,8 +201,8 @@ public class UserController {
             if (adminUser.isPresent()) {
                 notificationService.createNotification(
                     adminUser.get(),
-                    "User Berhasil Dibuat",
-                    String.format("User '%s' dengan email %s dan role %s berhasil dibuat", 
+                    "User Successfully Created",
+                    String.format("User '%s' with email %s and role %s has been successfully created", 
                         savedUser.getName(), savedUser.getEmail(), savedUser.getRole().name()),
                     "success"
                 );
@@ -268,7 +271,7 @@ public class UserController {
             if (adminUser.isPresent()) {
                 String changes = "";
                 if (!originalName.equals(updatedUser.getName())) {
-                    changes += "Nama: " + originalName + " → " + updatedUser.getName() + ", ";
+                    changes += "Name: " + originalName + " → " + updatedUser.getName() + ", ";
                 }
                 if (!originalEmail.equals(updatedUser.getEmail())) {
                     changes += "Email: " + originalEmail + " → " + updatedUser.getEmail() + ", ";
@@ -277,15 +280,15 @@ public class UserController {
                     changes += "Role: " + originalRole.name() + " → " + updatedUser.getRole().name() + ", ";
                 }
                 if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
-                    changes += "Password: Diperbarui, ";
+                    changes += "Password: Updated, ";
                 }
                 
                 if (!changes.isEmpty()) {
                     changes = changes.substring(0, changes.length() - 2); // Remove last ", "
                     notificationService.createNotification(
                         adminUser.get(),
-                        "User Berhasil Diperbarui",
-                        String.format("User '%s' berhasil diperbarui. Perubahan: %s", updatedUser.getName(), changes),
+                        "User Successfully Updated",
+                        String.format("User '%s' has been successfully updated. Changes: %s", updatedUser.getName(), changes),
                         "info"
                     );
                     
@@ -336,11 +339,13 @@ public class UserController {
             String adminEmail = authentication.getName();
             Optional<User> adminUser = userRepository.findByEmail(adminEmail);
             
+
+            
             if (adminUser.isPresent() && !userName.isEmpty()) {
                 notificationService.createNotification(
                     adminUser.get(),
-                    "User Berhasil Dihapus",
-                    String.format("User '%s' dengan email %s dan role %s berhasil dihapus", 
+                    "User Successfully Deleted",
+                    String.format("User '%s' with email %s and role %s has been successfully deleted", 
                         userName, userEmail, userRole != null ? userRole.name() : "Unknown"),
                     "warning"
                 );

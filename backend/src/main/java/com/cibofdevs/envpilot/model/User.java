@@ -76,6 +76,26 @@ public class User {
     @JsonIgnore
     private List<Project> projects;
 
+    @OneToMany(mappedBy = "triggeredBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<DeploymentHistory> deploymentHistory;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Notification> notifications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ProjectAssignment> projectAssignments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<EnvironmentAssignment> environmentAssignments;
+
+    @OneToMany(mappedBy = "assignedBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<EnvironmentAssignment> environmentAssignmentsAssigned;
+
     public enum Role {
         ADMIN, DEVELOPER, QA
     }
