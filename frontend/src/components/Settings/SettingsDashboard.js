@@ -64,7 +64,7 @@ const SettingsDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div className="card">
         <div className="px-4 py-5 sm:p-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
@@ -93,8 +93,8 @@ const SettingsDashboard = () => {
       )}
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="card">
+        <div className="border-b border-gray-200 dark:border-white/10">
           <nav className="-mb-px flex flex-nowrap overflow-x-auto space-x-4 sm:space-x-8 px-2 sm:px-6" aria-label="Tabs">
             {tabs.map((tab) => (
               <button
@@ -103,7 +103,7 @@ const SettingsDashboard = () => {
                 className={`${
                   activeTab === tab.id
                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
                 } whitespace-nowrap py-2 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-2 min-w-max`}
               >
                 <tab.icon className="h-4 w-4 sm:h-5 sm:w-5" />

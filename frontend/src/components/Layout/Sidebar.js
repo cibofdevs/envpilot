@@ -58,17 +58,15 @@ export default function Sidebar() {
   const allNavigation = isAdmin() ? [...navigation, ...getAdminNavigation()] : navigation;
 
   return (
-    <div className="flex flex-col bg-gray-800 w-full h-full relative z-20">
+    <div className="sidebar-responsive relative z-20">
       {/* Logo/Brand Section */}
-      <div className="flex items-center h-16 flex-shrink-0 px-3 sm:px-4 bg-gray-900 relative z-20">
+      <div className="flex items-center h-16 flex-shrink-0 px-3 sm:px-4 bg-transparent border-b border-white/5 relative z-20">
         <div className="flex items-center w-full">
-          <div className="flex-shrink-0">
-            <img 
-              src="/logo.svg" 
-              alt="EnvPilot Logo" 
-              className="h-8 w-8"
-            />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="EnvPilot Logo"
+            className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 rounded-xl shadow-glow"
+          />
           <div className="ml-3 flex-1 min-w-0">
             <h1 className="text-white text-sm sm:text-base lg:text-lg font-semibold truncate">EnvPilot</h1>
           </div>
@@ -77,7 +75,7 @@ export default function Sidebar() {
 
       {/* Navigation Section */}
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <nav className="flex-1 px-2 sm:px-3 py-4 space-y-1">
           {allNavigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
@@ -86,14 +84,14 @@ export default function Sidebar() {
                 to={item.href}
                 className={classNames(
                   isActive
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 focus:outline-none'
+                    ? 'bg-gradient-to-br from-primary-500 to-accent-600 text-white shadow-glow'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white',
+                  'group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none'
                 )}
               >
                 <item.icon
                   className={classNames(
-                    isActive ? 'text-gray-300' : 'text-gray-400 group-hover:text-gray-300',
+                    isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-300',
                     'mr-2 sm:mr-3 flex-shrink-0 h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6'
                   )}
                   aria-hidden="true"

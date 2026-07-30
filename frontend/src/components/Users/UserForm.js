@@ -93,8 +93,8 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+      <div className="card relative top-20 mx-auto p-6 w-96">
         <div className="mt-3">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -120,9 +120,7 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                  errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.name ? 'border-red-500' : ''}`}
                 placeholder="Enter full name"
               />
               {errors.name && (
@@ -141,9 +139,7 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                  errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                 placeholder="Enter email address"
               />
               {errors.email && (
@@ -163,9 +159,7 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                  errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.password ? 'border-red-500' : ''}`}
                 placeholder={user ? "Enter new password" : "Enter password"}
               />
               {errors.password && (
@@ -183,12 +177,10 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                  errors.role ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.role ? 'border-red-500' : ''}`}
               >
                 {roles.map(role => (
-                  <option key={role} value={role} className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                  <option key={role} value={role} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                     {role}
                   </option>
                 ))}
@@ -200,7 +192,7 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
 
             {/* Submit Error */}
             {errors.submit && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
                 {errors.submit}
               </div>
             )}
@@ -210,14 +202,14 @@ const UserForm = ({ user, roles, onSubmit, onCancel }) => {
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="btn-secondary"
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="btn-primary disabled:opacity-50"
                 disabled={loading}
               >
                 {loading ? (

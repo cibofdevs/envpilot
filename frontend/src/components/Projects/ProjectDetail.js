@@ -97,7 +97,7 @@ export default function ProjectDetail() {
 
       {/* Tabs */}
       <Tab.Group>
-        <Tab.List className="relative flex space-x-1 rounded-xl bg-white dark:bg-gray-800 p-1 border border-blue-100 dark:border-gray-700 overflow-x-auto">
+        <Tab.List className="relative flex space-x-1 rounded-xl bg-white dark:bg-white/5 dark:backdrop-blur-xl p-1 border border-primary-100 dark:border-white/10 overflow-x-auto">
           {tabs.map((tab, idx) => (
             <Tab
               key={tab.name}
@@ -105,8 +105,8 @@ export default function ProjectDetail() {
                 classNames(
                   'w-full flex items-center justify-center gap-2 rounded-lg py-2.5 px-4 text-sm font-semibold leading-5 transition-all duration-200 focus:outline-none',
                   selected
-                    ? 'bg-primary-600 text-white shadow ring-2 ring-primary-400'
-                    : 'bg-primary-50 dark:bg-gray-700 text-primary-700 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-gray-600'
+                    ? 'bg-primary-600 dark:bg-gradient-to-br dark:from-primary-500 dark:to-accent-600 text-white shadow dark:shadow-glow ring-2 ring-primary-400 dark:ring-0'
+                    : 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40'
                 )
               }
             >

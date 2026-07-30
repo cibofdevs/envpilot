@@ -156,12 +156,12 @@ export default function Header({ onMenuClick }) {
         return <span className="text-yellow-600">●</span>;
       case 'info':
       default:
-        return <span className="text-blue-600">●</span>;
+        return <span className="text-primary-600">●</span>;
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-10">
+    <div className="bg-white/80 dark:bg-surface-900/60 backdrop-blur-xl shadow-sm dark:shadow-none border-b border-gray-200 dark:border-white/10 relative z-10">
       {/* Notif error toast */}
       {notifError && (
         <div className="fixed top-4 right-4 z-[9992] bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded shadow">
@@ -181,17 +181,13 @@ export default function Header({ onMenuClick }) {
               <span className="sr-only">Open sidebar</span>
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
-            
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 ml-2 lg:ml-0 hidden md:block">
-              {config.APP_NAME}
-            </h2>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notifications */}
             <div className="relative">
               <button
                 type="button"
-                className="bg-white dark:bg-gray-700 p-2 rounded-full text-gray-400 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none transition-all duration-200 relative"
+                className="bg-white dark:bg-white/5 p-2 rounded-full text-gray-400 dark:text-gray-400 hover:text-gray-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none transition-all duration-200 relative"
                 onClick={handleBellClick}
                 ref={bellRef}
               >
@@ -214,7 +210,7 @@ export default function Header({ onMenuClick }) {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <div ref={notifBoxRef} className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 z-[9997]">
+                <div ref={notifBoxRef} className="origin-top-right absolute right-0 mt-2 w-80 rounded-2xl shadow-xl dark:shadow-glass bg-white/95 dark:bg-surface-800/90 backdrop-blur-xl ring-1 ring-black ring-opacity-5 dark:ring-white/10 z-[9997] overflow-hidden">
                   <div className="flex items-center justify-between py-2 px-4 border-b border-gray-200 dark:border-gray-700">
                     <span className="font-semibold text-gray-700 dark:text-gray-300">Notifications</span>
                     {notifications.length > 0 && (
@@ -222,7 +218,7 @@ export default function Header({ onMenuClick }) {
                         {calculatedUnreadCount > 0 && (
                           <button
                             onClick={handleMarkAllAsRead}
-                            className="text-xs text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 hover:underline focus:outline-none disabled:opacity-50"
+                            className="text-xs text-primary-500 hover:text-primary-700 dark:hover:text-primary-400 hover:underline focus:outline-none disabled:opacity-50"
                             disabled={loading}
                           >
                             {loading ? 'Marking...' : 'Mark All Read'}
@@ -248,7 +244,7 @@ export default function Header({ onMenuClick }) {
                         <li 
                           key={notif.id} 
                           className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 relative group cursor-pointer transition-colors duration-200 ${
-                            !notif.read ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500' : ''
+                            !notif.read ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary-500' : ''
                           }`}
                           onClick={() => handleNotificationClick(notif.id)}
                         >
@@ -277,7 +273,7 @@ export default function Header({ onMenuClick }) {
                                 </div>
                                 {!notif.read && (
                                   <div className="mt-2">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
                                       New
                                     </span>
                                   </div>
@@ -330,7 +326,7 @@ export default function Header({ onMenuClick }) {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none z-[9995]">
+                <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-2xl shadow-xl dark:shadow-glass py-1 bg-white/95 dark:bg-surface-800/90 backdrop-blur-xl ring-1 ring-black ring-opacity-5 dark:ring-white/10 focus:outline-none z-[9995] overflow-hidden">
                   <Menu.Item>
                     {({ active }) => (
                       <button
@@ -388,7 +384,7 @@ export default function Header({ onMenuClick }) {
         message="Are you sure you want to sign out? You will need to log in again to access your account."
         confirmText="Yes, Sign Out"
         cancelText="Cancel"
-        confirmButtonClass="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+        confirmButtonClass="btn-danger"
       />
     </div>
   );

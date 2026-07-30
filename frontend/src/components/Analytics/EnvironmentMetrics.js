@@ -6,9 +6,9 @@ const EnvironmentMetrics = ({ data }) => {
     return (
       <div className="space-y-6">
         {[...Array(2)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div key={i} className="card p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-white/10 rounded w-1/4 mb-4"></div>
+            <div className="h-32 bg-gray-200 dark:bg-white/10 rounded"></div>
           </div>
         ))}
       </div>
@@ -21,12 +21,12 @@ const EnvironmentMetrics = ({ data }) => {
       case 'inactive': return 'bg-gray-500';
       case 'maintenance': return 'bg-yellow-500';
       case 'error': return 'bg-red-500';
-      default: return 'bg-blue-500';
+      default: return 'bg-primary-500';
     }
   };
 
-  const renderMetricCard = (title, value, subtitle, icon, color = 'blue') => (
-    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+  const renderMetricCard = (title, value, subtitle, icon, color = 'primary') => (
+    <div className="card p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
@@ -42,7 +42,7 @@ const EnvironmentMetrics = ({ data }) => {
     </div>
   );
 
-  const renderBarChart = (data, title, color = 'blue', unit = '') => {
+  const renderBarChart = (data, title, color = 'primary', unit = '') => {
     if (!data || Object.keys(data).length === 0) {
       return (
         <div className="text-center py-8">
@@ -71,7 +71,7 @@ const EnvironmentMetrics = ({ data }) => {
                     {value}{unit}
                   </p>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2">
                   <div 
                     className={`bg-${color}-500 h-2 rounded-full transition-all duration-300`}
                     style={{ width: `${(value / maxValue) * 100}%` }}
@@ -149,7 +149,7 @@ const EnvironmentMetrics = ({ data }) => {
           totalEnvironments,
           'All environments',
           <GlobeAltIcon className="h-6 w-6" />,
-          'blue'
+          'primary'
         )}
         {renderMetricCard(
           'Active Environments',
@@ -177,23 +177,23 @@ const EnvironmentMetrics = ({ data }) => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Environment Status Distribution */}
-        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-4 sm:p-6">
           {renderPieChart(environmentStatusDistribution, 'Environment Status Distribution')}
         </div>
 
         {/* Environments by Project */}
-        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-4 sm:p-6">
           {renderBarChart(environmentsByProject, 'Environments by Project', 'green')}
         </div>
       </div>
 
       {/* Environment Health Overview */}
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="card p-4 sm:p-6">
         <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Environment Health Overview</h4>
         {data.environmentHealth && Object.keys(data.environmentHealth).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(data.environmentHealth).map(([envName, health]) => (
-              <div key={envName} className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div key={envName} className="p-3 sm:p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm sm:text-base" title={envName}>
                     {envName}

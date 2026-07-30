@@ -64,11 +64,11 @@ const MfaVerification = ({ tempToken, onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-transparent py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 card p-6 sm:p-8">
         <div>
-          <div className="mx-auto h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-            <ShieldCheckIcon className="h-6 w-6 text-white" />
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 shadow-glow-lg flex items-center justify-center">
+            <ShieldCheckIcon className="h-7 w-7 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             Two-Factor Authentication
@@ -83,13 +83,13 @@ const MfaVerification = ({ tempToken, onComplete }) => {
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               We've sent a verification code to your authenticator app. Please enter it below:
             </p>
-            
+
             <input
               type="text"
               maxLength="6"
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 text-center text-lg font-mono bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="input-field text-center text-lg font-mono"
               placeholder="000000"
               autoFocus
             />
@@ -98,14 +98,14 @@ const MfaVerification = ({ tempToken, onComplete }) => {
           <div className="flex space-x-3">
             <button
               onClick={handleBackToLogin}
-              className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 transition-colors duration-200"
+              className="btn-secondary flex-1 inline-flex justify-center"
             >
               Back to Login
             </button>
             <button
               onClick={handleVerification}
               disabled={loading || verificationCode.length !== 6}
-              className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="btn-primary flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Verifying...' : 'Verify'}
             </button>

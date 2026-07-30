@@ -24,8 +24,8 @@ const DeploymentStatusBadge = ({ status, size = 'sm' }) => {
       },
       PENDING: {
         icon: ClockIcon,
-        classes: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800',
-        iconClasses: 'text-blue-500 dark:text-blue-200',
+        classes: 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-800',
+        iconClasses: 'text-primary-500 dark:text-primary-200',
         text: 'Pending'
       },
       IN_PROGRESS: {

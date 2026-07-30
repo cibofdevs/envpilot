@@ -24,7 +24,7 @@ function Toast({ show, type, message, onClose }) {
   if (!show) return null;
   return (
     <div className={`fixed top-6 right-6 z-[9996] min-w-[260px] max-w-xs flex items-center px-4 py-3 rounded-lg shadow-lg transition-all duration-300
-      ${type === 'success' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800'}`}
+      ${type === 'success' ? 'bg-green-50 dark:bg-green-900/30 dark:backdrop-blur-xl border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/30 dark:backdrop-blur-xl border border-red-200 dark:border-red-800'}`}
     >
       <span className="mr-3">
         {type === 'success' ? (
@@ -405,13 +405,13 @@ export default function ProjectEnvironments({ project }) {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'ADMIN':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+        return 'bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200';
       case 'DEVELOPER':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200';
       case 'QA':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-300';
     }
   };
 
@@ -420,11 +420,11 @@ export default function ProjectEnvironments({ project }) {
       case 'ACTIVE':
         return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
       case 'INACTIVE':
-        return <XCircleIcon className="h-4 w-4 text-gray-500" />;
+        return <XCircleIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
       case 'REVOKED':
         return <XCircleIcon className="h-4 w-4 text-red-500" />;
       default:
-        return <XCircleIcon className="h-4 w-4 text-gray-500" />;
+        return <XCircleIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -507,17 +507,17 @@ export default function ProjectEnvironments({ project }) {
       
       {/* Log Real-time Shortcut */}
       {lastBuildNumber && lastDeployedEnvironment && lastBuildProjectId === project.id && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <DocumentTextIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
-                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                <h4 className="text-sm font-medium text-primary-900 dark:text-primary-100">
                   Build #{lastBuildNumber} - {lastDeployedEnvironment.name}
                 </h4>
-                <p className="text-xs text-blue-700 dark:text-blue-300">
+                <p className="text-xs text-primary-700 dark:text-primary-300">
                   Deployment triggered successfully. View real-time logs to monitor progress.
                 </p>
               </div>
@@ -525,7 +525,7 @@ export default function ProjectEnvironments({ project }) {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setShowLogsModal(true)}
-                className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/40 border border-primary-200 dark:border-primary-800 rounded-md hover:bg-primary-200 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-surface-800 transition-colors"
               >
                 <EyeIcon className="h-4 w-4 mr-2" />
                 View Logs
@@ -536,7 +536,7 @@ export default function ProjectEnvironments({ project }) {
                   setLastDeployedEnvironment(null);
                   setLastBuildProjectId(null);
                 }}
-                className="inline-flex items-center px-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                className="inline-flex items-center px-2 py-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-surface-800 transition-colors"
               >
                 <XMarkIcon className="h-4 w-4" />
               </button>
@@ -548,7 +548,7 @@ export default function ProjectEnvironments({ project }) {
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Environments</h3>
         <div className="flex items-center space-x-3">
           {!canDeploy() && (
-            <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900 px-3 py-1 rounded-md border border-amber-200 dark:border-amber-800">
+            <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-800">
               ⚠️ Deploy permission required
             </div>
           )}
@@ -556,7 +556,7 @@ export default function ProjectEnvironments({ project }) {
             <button
               onClick={() => fetchEnvironmentStats(environments)}
               disabled={loadingStats}
-              className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+              className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
               title="Refresh environment stats"
             >
               <svg className={`h-4 w-4 mr-1 ${loadingStats ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -643,12 +643,12 @@ export default function ProjectEnvironments({ project }) {
 
                 {/* Feature Flags and Configurations - Admin Only */}
                 {isAdmin() && (
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="pt-3 border-t border-gray-200 dark:border-white/10">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500 dark:text-gray-400">Feature Flags:</span>
                       <span className="font-medium text-gray-900 dark:text-gray-100">
                         {loadingStats ? (
-                          <div className="animate-pulse bg-gray-200 dark:bg-gray-600 h-4 w-4 rounded"></div>
+                          <div className="animate-pulse bg-gray-200 dark:bg-white/10 h-4 w-4 rounded"></div>
                         ) : (
                           environmentStats[environment.id]?.featureFlags || 0
                         )}
@@ -658,7 +658,7 @@ export default function ProjectEnvironments({ project }) {
                       <span className="text-gray-500 dark:text-gray-400">Configurations:</span>
                       <span className="font-medium text-gray-900 dark:text-gray-100">
                         {loadingStats ? (
-                          <div className="animate-pulse bg-gray-200 dark:bg-gray-600 h-4 w-4 rounded"></div>
+                          <div className="animate-pulse bg-gray-200 dark:bg-white/10 h-4 w-4 rounded"></div>
                         ) : (
                           environmentStats[environment.id]?.configurations || 0
                         )}
@@ -669,7 +669,7 @@ export default function ProjectEnvironments({ project }) {
 
                 {/* Environment Assignments Section - Admin Only */}
                 {isAdmin() && (
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="pt-3 border-t border-gray-200 dark:border-white/10">
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">User Assignments</h5>
                       <button
@@ -677,7 +677,7 @@ export default function ProjectEnvironments({ project }) {
                           setSelectedEnvironment(environment.id);
                           setShowAssignModal(true);
                         }}
-                        className="inline-flex items-center px-2 py-1 text-xs bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                        className="inline-flex items-center px-2 py-1 text-xs bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-surface-800 transition-colors"
                       >
                         <UserPlusIcon className="h-3 w-3 mr-1" />
                         Assign
@@ -689,7 +689,7 @@ export default function ProjectEnvironments({ project }) {
                       return envAssignments.length > 0 ? (
                         <div className="space-y-2">
                           {envAssignments.map((assignment) => (
-                            <div key={assignment.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                            <div key={assignment.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
                               <div className="flex items-center space-x-2">
                                 <UsersIcon className="h-3 w-3 text-gray-400" />
                                 <div>
@@ -735,7 +735,7 @@ export default function ProjectEnvironments({ project }) {
                 <div className="pt-3">
                   {!canDeployToEnvironment(environment.name) ? (
                     <div className="text-center">
-                      <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900 px-2 py-1 rounded border border-amber-200 dark:border-amber-800">
+                      <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800">
                         🔒 Admin Only
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -746,10 +746,10 @@ export default function ProjectEnvironments({ project }) {
                     <button
                       onClick={() => handleQuickDeploy(environment.id)}
                       disabled={deployingEnv === environment.id || !isJenkinsConfigured() || !canDeploy()}
-                      className={`w-full inline-flex items-center justify-center px-3 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                      className={`w-full inline-flex items-center justify-center px-3 py-2 border text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         isJenkinsConfigured() && canDeploy()
-                          ? 'border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900 hover:bg-primary-100 dark:hover:bg-primary-800 focus:ring-primary-500'
-                          : 'border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 cursor-not-allowed'
+                          ? 'border-primary-300 dark:border-primary-800 text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:ring-primary-500'
+                          : 'border-gray-300 dark:border-white/10 text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 cursor-not-allowed'
                       }`}
                       title={!canDeploy() ? 'Insufficient permissions' : !isJenkinsConfigured() ? 'Configure Jenkins first' : 'Quick deploy to this environment'}
                     >
@@ -777,15 +777,15 @@ export default function ProjectEnvironments({ project }) {
       {/* Assign Users Modal */}
       {showAssignModal && ReactDOM.createPortal(
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]"
+          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-[99999]"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowAssignModal(false);
             }
           }}
         >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="card max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Assign Users to Environment
               </h3>
@@ -806,7 +806,7 @@ export default function ProjectEnvironments({ project }) {
                 <select
                   value={selectedEnvironment}
                   onChange={(e) => setSelectedEnvironment(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="input-field"
                 >
                   <option value="">Select Environment</option>
                   {environments.map((env) => (
@@ -822,9 +822,9 @@ export default function ProjectEnvironments({ project }) {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Users
                 </label>
-                <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-white/10 rounded-lg">
                   {users.map((user) => (
-                    <label key={user.id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <label key={user.id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-white/5">
                       <input
                         type="checkbox"
                         checked={selectedUsers.includes(user.id)}
@@ -856,23 +856,23 @@ export default function ProjectEnvironments({ project }) {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="input-field"
                   placeholder="Add any notes about this assignment..."
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-white/10">
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAssignUsers}
                 disabled={assigning || selectedUsers.length === 0 || !selectedEnvironment}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {assigning ? (
                   <>

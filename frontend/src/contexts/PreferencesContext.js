@@ -17,7 +17,7 @@ export const PreferencesProvider = ({ children }) => {
   const { theme, setThemeMode } = useTheme();
   const [preferences, setPreferences] = useState({
     ui: {
-      theme: 'light',
+      theme,
       language: 'en'
     },
     dashboard: {
@@ -32,19 +32,13 @@ export const PreferencesProvider = ({ children }) => {
 
   useEffect(() => {
     loadPreferences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Sync theme from preferences with useTheme hook
-  useEffect(() => {
-    if (preferences.ui?.theme && preferences.ui.theme !== theme) {
-      setThemeMode(preferences.ui.theme);
-    }
-  }, [preferences.ui?.theme, theme, setThemeMode]);
 
   const loadPreferences = async () => {
     // Check if we're in a Mixed Content situation (HTTPS frontend, HTTP backend)
     const isMixedContent = window.location.protocol === 'https:' && config.API_BASE_URL.startsWith('http://');
-    
+
     if (isMixedContent) {
       console.warn('Preferences loading disabled due to Mixed Content: HTTPS frontend cannot connect to HTTP backend');
       setMixedContentError(true);
@@ -56,6 +50,11 @@ export const PreferencesProvider = ({ children }) => {
       setLoading(true);
       const response = await settingsAPI.getUserPreferences();
       setPreferences(response.data);
+      // Only apply the server-saved theme once, on a successful initial load -
+      // it must never override a theme the user already picked locally afterwards.
+      if (response.data.ui?.theme) {
+        setThemeMode(response.data.ui.theme);
+      }
     } catch (err) {
       console.error('Failed to load preferences:', err);
       setError('Failed to load preferences');

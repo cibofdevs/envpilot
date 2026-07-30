@@ -107,12 +107,12 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
         }
       }}
     >
-      <div className={`bg-white dark:bg-gray-900 rounded-lg shadow-xl ${isExpanded ? 'w-full h-full' : 'w-4/5 h-3/4'} flex flex-col relative`}>
+      <div className={`bg-white dark:bg-surface-800/95 dark:backdrop-blur-xl rounded-2xl shadow-xl dark:shadow-glass border border-transparent dark:border-white/10 overflow-hidden ${isExpanded ? 'w-full h-full' : 'w-4/5 h-3/4'} flex flex-col relative`}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-white/10 gap-3 sm:gap-0">
           {/* Kiri: Icon + Judul */}
           <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
-            <DocumentTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 flex-shrink-0" />
+            <DocumentTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-400 flex-shrink-0" />
             <div>
               <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">
                 Build Logs - {project.name}
@@ -128,10 +128,10 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
             {/* Auto Refresh Toggle */}
             <button
               onClick={handleAutoRefreshToggle}
-              className={`inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${
-                autoRefresh 
-                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800' 
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+              className={`inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-colors ${
+                autoRefresh
+                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-800'
+                  : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/10'
               }`}
             >
               <ArrowPathIcon className={`h-4 w-4 mr-1 ${autoRefresh ? 'animate-spin' : ''}`} />
@@ -141,7 +141,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
             {/* Expand/Collapse */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
             >
               {isExpanded ? (
                 <>
@@ -169,7 +169,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
                   console.log('onClose is not a function:', onClose);
                 }
               }}
-              className="inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-md hover:bg-red-200 dark:hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              className="inline-flex items-center px-2.5 sm:px-3 py-1 text-xs sm:text-sm bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-surface-800"
               type="button"
             >
               <XMarkIcon className="h-4 w-4 mr-1" />
@@ -194,13 +194,13 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
                 <div className="mt-4 space-y-2">
                   <button
                     onClick={fetchLogs}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                    className="btn-primary"
                   >
                     🔄 Retry
                   </button>
                   <button
                     onClick={onClose}
-                    className="ml-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    className="ml-2 px-4 py-2 bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-white/10 transition-colors"
                   >
                     ✕ Close
                   </button>
@@ -208,11 +208,11 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
               </div>
             </div>
           ) : (
-            <div className="h-full overflow-auto bg-gray-50 dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-b-lg">
+            <div className="h-full overflow-auto bg-gray-50 dark:bg-black/20 p-4 border border-gray-200 dark:border-white/10 rounded-b-2xl">
               <div className="space-y-0.5">
                 {logs
                   ? logs.split('\n').map((line, index) => {
-                      let className = 'text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900';
+                      let className = 'text-gray-800 dark:text-gray-100 bg-white dark:bg-transparent';
                       if (/error|failed|exception/i.test(line)) {
                         className = 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 font-semibold';
                       } else if (/warn|warning/i.test(line)) {
@@ -220,7 +220,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
                       } else if (/success|passed|build successful/i.test(line)) {
                         className = 'text-green-700 dark:text-green-200 bg-green-50 dark:bg-green-900/30 font-semibold';
                       } else if (/info|starting|running|building/i.test(line)) {
-                        className = 'text-blue-800 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30';
+                        className = 'text-primary-800 dark:text-primary-200 bg-primary-50 dark:bg-primary-900/30';
                       }
                       return (
                         <div
@@ -239,12 +239,12 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
           <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
             <div>
               {autoRefresh && (
                 <span className="inline-flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></div>
+                  <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse mr-2"></div>
                   Auto refreshing every 5 seconds
                 </span>
               )}
@@ -253,7 +253,7 @@ const BuildLogs = ({ project, buildNumber, onClose }) => {
               <button
                 onClick={fetchLogs}
                 disabled={loading}
-                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
               >
                 <ArrowPathIcon className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
                 Refresh

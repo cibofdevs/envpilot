@@ -96,21 +96,21 @@ const AnalyticsDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center py-24">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="flex items-center justify-center py-24">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={handleRetry}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="btn-primary"
           >
             Retry
           </button>
@@ -128,7 +128,7 @@ const AnalyticsDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -142,7 +142,7 @@ const AnalyticsDashboard = () => {
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(Number(e.target.value))}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                className="border border-gray-300 dark:border-white/10 rounded-md px-3 py-2 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400"
               >
                 <option value={7}>Last 7 days</option>
                 <option value={30}>Last 30 days</option>
@@ -162,7 +162,7 @@ const AnalyticsDashboard = () => {
               {/* Refresh Button */}
               <button
                 onClick={handleRefresh}
-                className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2 text-sm"
+                className="btn-primary justify-center space-x-2 text-sm"
               >
                 <ArrowPathIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="hidden sm:inline">Refresh</span>
@@ -172,7 +172,7 @@ const AnalyticsDashboard = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
+        <div className="border-b border-gray-200 dark:border-white/10 mb-6 sm:mb-8">
           <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
               const IconComponent = tab.icon;
@@ -182,8 +182,8 @@ const AnalyticsDashboard = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 sm:space-x-2 whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
                   }`}
                 >
                   <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />

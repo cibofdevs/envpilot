@@ -3,17 +3,17 @@ import React from 'react';
 const TrendsChart = ({ data, dateRange }) => {
   if (!data) {
     return (
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="card p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-white/10 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-white/10 rounded"></div>
         </div>
       </div>
     );
   }
 
   // Simple bar chart implementation using CSS
-  const renderBarChart = (chartData, title, color = 'blue') => {
+  const renderBarChart = (chartData, title, color = 'primary') => {
     if (!chartData || Object.keys(chartData).length === 0) {
       return (
         <div className="text-center text-gray-500 dark:text-gray-400 py-8">
@@ -72,7 +72,7 @@ const TrendsChart = ({ data, dateRange }) => {
               <div className="w-20 text-xs text-gray-600 dark:text-gray-400 truncate" title={key}>
                 {String(key)}
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative">
+              <div className="flex-1 bg-gray-200 dark:bg-white/10 rounded-full h-4 relative">
                 <div
                   className={`bg-${color}-500 h-4 rounded-full transition-all duration-500`}
                   style={{ width: `${maxValue > 0 ? (Number(value) / maxValue) * 100 : 0}%` }}
@@ -90,7 +90,7 @@ const TrendsChart = ({ data, dateRange }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="card p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Trends Over Last {dateRange} Days
         </h3>
@@ -98,7 +98,7 @@ const TrendsChart = ({ data, dateRange }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Project Creation Trends */}
           <div>
-            {renderBarChart(data.projectCreationTrends, 'Project Creation', 'blue')}
+            {renderBarChart(data.projectCreationTrends, 'Project Creation', 'primary')}
           </div>
           
           {/* Deployment Frequency */}
@@ -110,7 +110,7 @@ const TrendsChart = ({ data, dateRange }) => {
 
       {/* Status Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-6">
           <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Project Status Distribution</h4>
           {data.projectStatusDistribution ? (
             <div className="space-y-3">
@@ -118,9 +118,9 @@ const TrendsChart = ({ data, dateRange }) => {
                 <div key={status} className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">{status.toLowerCase()}</span>
                   <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-20 bg-gray-200 dark:bg-white/10 rounded-full h-2">
                       <div
-                        className="bg-blue-500 h-2 rounded-full"
+                        className="bg-primary-500 h-2 rounded-full"
                         style={{ 
                           width: `${data.totalProjects > 0 ? (count / data.totalProjects) * 100 : 0}%` 
                         }}
@@ -136,7 +136,7 @@ const TrendsChart = ({ data, dateRange }) => {
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-6">
           <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Deployment Status Distribution</h4>
           {data.deploymentStatusDistribution ? (
             <div className="space-y-3">
@@ -147,7 +147,7 @@ const TrendsChart = ({ data, dateRange }) => {
                     case 'failed': return 'bg-red-500';
                     case 'in_progress': return 'bg-yellow-500';
                     case 'pending': return 'bg-gray-500';
-                    default: return 'bg-blue-500';
+                    default: return 'bg-primary-500';
                   }
                 };
                 
@@ -157,7 +157,7 @@ const TrendsChart = ({ data, dateRange }) => {
                       {status.replace('_', ' ').toLowerCase()}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-20 bg-gray-200 dark:bg-white/10 rounded-full h-2">
                         <div
                           className={`${getStatusColor(status)} h-2 rounded-full`}
                           style={{ 

@@ -37,7 +37,7 @@ export default function UserQuickActions() {
       description: 'Start a new project',
       icon: PlusIcon,
       href: '/projects/new',
-      color: 'bg-blue-500 hover:bg-blue-600',
+      color: 'bg-primary-500 hover:bg-primary-600',
       showForRoles: ['ADMIN']
     },
     {
@@ -100,9 +100,9 @@ export default function UserQuickActions() {
 
   return (
     <div className="card">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
-        <p className="text-sm text-gray-500">Common tasks for {user?.role?.toLowerCase() || 'user'}</p>
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Quick Actions</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Common tasks for {user?.role?.toLowerCase() || 'user'}</p>
       </div>
       <div className="p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -110,17 +110,17 @@ export default function UserQuickActions() {
             <Link
               key={action.name}
               to={action.href}
-              className="group relative bg-white p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all duration-200"
+              className="group relative bg-white dark:bg-white/5 p-4 border border-gray-200 dark:border-white/10 rounded-xl hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md dark:hover:shadow-glow transition-all duration-200"
             >
               <div className="flex items-center space-x-3">
                 <div className={`flex-shrink-0 p-2 rounded-lg ${action.color} transition-colors duration-200`}>
                   <action.icon className="h-5 w-5 text-white" aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 group-hover:text-primary-600 transition-colors duration-200">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                     {action.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {action.description}
                   </p>
                 </div>
@@ -128,12 +128,12 @@ export default function UserQuickActions() {
             </Link>
           ))}
         </div>
-        
+
         {availableActions.length === 0 && (
           <div className="text-center py-8">
             <CogIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No actions available</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No actions available</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Contact your administrator for access to system features.
             </p>
           </div>

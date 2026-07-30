@@ -34,10 +34,10 @@ export default function RecentProjects({ projects, isAdmin = false, userRole }) 
 
   return (
     <div className="card">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Projects</h3>
       </div>
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="divide-y divide-gray-200 dark:divide-white/10">
         {projects.length === 0 ? (
           <div className="px-6 py-8 text-center">
             <FolderIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
@@ -83,7 +83,7 @@ export default function RecentProjects({ projects, isAdmin = false, userRole }) 
         )}
       </div>
       {projects.length > 0 && (
-        <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-3 bg-gray-50 dark:bg-white/5 border-t border-gray-200 dark:border-white/10">
           <Link
             to="/projects"
             className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"

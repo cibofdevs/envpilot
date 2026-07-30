@@ -254,7 +254,7 @@ export default function JenkinsDeployment({ project }) {
         return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />;
       case 'IN_PROGRESS':
       case null:
-        return <ClockIcon className="h-5 w-5 text-blue-500" />;
+        return <ClockIcon className="h-5 w-5 text-primary-500" />;
       default:
         return <ClockIcon className="h-5 w-5 text-gray-500" />;
     }
@@ -312,8 +312,8 @@ export default function JenkinsDeployment({ project }) {
   return (
     <div className="space-y-6">
       {/* Deployment Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="card">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
             <PlayIcon className="h-5 w-5 mr-2 text-primary-600" />
             Deploy to Environment
@@ -331,7 +331,7 @@ export default function JenkinsDeployment({ project }) {
                   id="environment"
                   value={selectedEnvironment}
                   onChange={(e) => setSelectedEnvironment(e.target.value)}
-                  className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                  className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
                   required
                 >
                   <option value="">Select an environment</option>
@@ -354,7 +354,7 @@ export default function JenkinsDeployment({ project }) {
                   <div className="relative">
                     <Combobox.Input
                       id="branch"
-                      className="block w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                      className="block w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
                       displayValue={(branchName) => branchName || ''}
                       onChange={(e) => setBranchQuery(e.target.value)}
                       placeholder={loadingBranches ? 'Loading branches...' : 'Search or select a branch...'}
@@ -371,7 +371,7 @@ export default function JenkinsDeployment({ project }) {
                       leaveTo="opacity-0"
                       afterLeave={() => setBranchQuery('')}
                     >
-                      <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-1 shadow-lg focus:outline-none">
+                      <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-800 py-1 shadow-lg focus:outline-none">
                         {(() => {
                           const filteredBranches = branchQuery === ''
                             ? branchOptions
@@ -442,7 +442,7 @@ export default function JenkinsDeployment({ project }) {
                       type="checkbox"
                       checked={!!paramValues[param.name]}
                       onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+                      className="h-4 w-4 rounded border-gray-300 dark:border-white/20 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enabled</span>
                   </label>
@@ -451,7 +451,7 @@ export default function JenkinsDeployment({ project }) {
                     id={`param-${param.name}`}
                     value={paramValues[param.name] || ''}
                     onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
-                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
                   >
                     {(param.choices || []).map((choice) => (
                       <option key={choice} value={choice}>{choice}</option>
@@ -463,7 +463,7 @@ export default function JenkinsDeployment({ project }) {
                     value={paramValues[param.name] || ''}
                     onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
                     rows={3}
-                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200 resize-none"
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200 resize-none"
                   />
                 ) : (
                   <input
@@ -471,7 +471,7 @@ export default function JenkinsDeployment({ project }) {
                     type={param.type === 'PASSWORD' ? 'password' : 'text'}
                     value={paramValues[param.name] || ''}
                     onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
-                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
                   />
                 )}
               </div>
@@ -489,7 +489,7 @@ export default function JenkinsDeployment({ project }) {
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 placeholder="e.g., 1.0.0"
-                className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
               />
             </div>
 
@@ -505,16 +505,16 @@ export default function JenkinsDeployment({ project }) {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 placeholder="Add deployment notes, changelog, or any important information..."
-                className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200 resize-none"
+                className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200 resize-none"
               />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-white/10">
               <button
                 type="button"
                 onClick={clearSavedEnvironment}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:focus:ring-offset-surface-800 transition-colors duration-200"
               >
                 <ArrowPathIcon className="h-4 w-4 mr-2" />
                 Clear Saved
@@ -522,7 +522,7 @@ export default function JenkinsDeployment({ project }) {
               <button
                 type="submit"
                 disabled={deploying}
-                className="inline-flex items-center px-6 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="inline-flex items-center px-6 py-2 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-surface-800 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {deploying ? (
                   <>
@@ -543,8 +543,8 @@ export default function JenkinsDeployment({ project }) {
 
             {/* Build Status */}
       {buildStatus && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="card">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
                 <DocumentTextIcon className="h-5 w-5 mr-2 text-primary-600" />
@@ -553,7 +553,7 @@ export default function JenkinsDeployment({ project }) {
               <button
                 onClick={fetchBuildStatus}
                 disabled={loadingStatus}
-                className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 transition-colors duration-200"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-surface-800 disabled:opacity-50 transition-colors duration-200"
               >
                 <ArrowPathIcon className={`h-4 w-4 mr-1 ${loadingStatus ? 'animate-spin' : ''}`} />
                 Refresh
@@ -574,7 +574,7 @@ export default function JenkinsDeployment({ project }) {
                     (buildStatus.result || buildStatus.status) === 'SUCCESS' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
                     (buildStatus.result || buildStatus.status) === 'FAILURE' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
                     (buildStatus.result || buildStatus.status) === 'UNSTABLE' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                    'bg-primary-100 text-primary-800 dark:bg-primary-900/20 dark:text-primary-400'
                   }`}>
                     {getBuildStatusText(buildStatus)}
                   </span>
@@ -593,7 +593,7 @@ export default function JenkinsDeployment({ project }) {
             </div>
             
             {(buildStatus.description || buildStatus.description === '') && (
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                   {buildStatus.description || 'No description available'}
                 </p>
@@ -603,7 +603,7 @@ export default function JenkinsDeployment({ project }) {
             <div className="mt-6 flex space-x-3">
               <button
                 onClick={() => setShowLogs(!showLogs)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-surface-800 transition-colors duration-200"
               >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 {showLogs ? 'Hide Logs' : 'View Logs'}
@@ -616,13 +616,13 @@ export default function JenkinsDeployment({ project }) {
                     {availableBuilds.slice(0, 5).map((build) => (
                       <span
                         key={build.number}
-                        className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                        className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300"
                       >
                         #{build.number}
                       </span>
                     ))}
                     {availableBuilds.length > 5 && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300">
                         +{availableBuilds.length - 5} more
                       </span>
                     )}

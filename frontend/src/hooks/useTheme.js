@@ -8,12 +8,13 @@ export const useTheme = () => {
       return savedTheme;
     }
     
-    // Check system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
+    // Dark-first: default to the premium dark theme unless the user's
+    // system explicitly prefers light.
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light';
     }
-    
-    return 'light';
+
+    return 'dark';
   });
 
   const [systemTheme, setSystemTheme] = useState(() => {

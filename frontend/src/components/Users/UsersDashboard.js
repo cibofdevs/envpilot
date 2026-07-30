@@ -3,7 +3,7 @@ import { usersAPI, settingsAPI } from '../../services/api';
 import UsersList from './UsersList';
 import UserForm from './UserForm';
 import UserStats from './UserStats';
-import { UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { UsersIcon, ChartBarIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 const UsersDashboard = () => {
   const [activeTab, setActiveTab] = useState('users');
@@ -145,9 +145,9 @@ const UsersDashboard = () => {
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div key={i} className="card p-6">
+                <div className="h-4 bg-gray-200 dark:bg-white/10 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-gray-200 dark:bg-white/10 rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -163,27 +163,27 @@ const UsersDashboard = () => {
         {activeTab === 'users' && userRegistrationEnabled && (
           <button
             onClick={handleCreateUser}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            className="btn-primary"
           >
-            <span>➕</span>
+            <PlusIcon className="h-5 w-5" />
             Add User
           </button>
         )}
         {activeTab === 'users' && !userRegistrationEnabled && (
-          <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg">
+          <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/10 px-3 py-2 rounded-lg">
             User registration is disabled
           </div>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded mb-6">
+        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div className="border-b border-gray-200 dark:border-white/10 mb-6">
         <nav className="-mb-px flex flex-nowrap overflow-x-auto space-x-4 sm:space-x-8 px-2 sm:px-6" aria-label="Tabs">
           {tabs.map(tab => (
             <button
@@ -191,8 +191,8 @@ const UsersDashboard = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 min-w-max whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-white/20'
               }`}
             >
               <tab.icon className="h-4 w-4 sm:h-5 sm:w-5" />
