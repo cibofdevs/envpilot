@@ -6,6 +6,7 @@ import com.cibofdevs.envpilot.model.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -29,6 +30,10 @@ public class JenkinsService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    @Qualifier("jenkinsHealthCheckRestTemplate")
+    private RestTemplate healthCheckRestTemplate;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -298,6 +303,19 @@ public class JenkinsService {
      * Test Jenkins connection
      */
     public Map<String, Object> testJenkinsConnection(Project project) {
+        return testJenkinsConnection(project, restTemplate);
+    }
+
+    /**
+     * Lightweight connectivity probe using a short-timeout RestTemplate, meant for
+     * frequent monitoring/health-check callers (e.g. the analytics dashboard) that
+     * must not be blocked for a long time by a slow or unreachable Jenkins instance.
+     */
+    public Map<String, Object> testJenkinsConnectionQuick(Project project) {
+        return testJenkinsConnection(project, healthCheckRestTemplate);
+    }
+
+    private Map<String, Object> testJenkinsConnection(Project project, RestTemplate httpClient) {
         Map<String, Object> result = new HashMap<>();
 
         try {
@@ -321,7 +339,7 @@ public class JenkinsService {
 
             HttpEntity<String> request = new HttpEntity<>(headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(testUrl, HttpMethod.GET, request, String.class);
+            ResponseEntity<String> response = httpClient.exchange(testUrl, HttpMethod.GET, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 JsonNode jobInfo = objectMapper.readTree(response.getBody());
