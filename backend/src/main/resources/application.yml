@@ -20,7 +20,7 @@ spring:
       connection-timeout: 5000
       read-timeout: 15000
   datasource:
-    url: jdbc:postgresql://145.223.21.26:5432/envpilot
+    url: ${DATASOURCE_URL:jdbc:postgresql://145.223.21.26:5432/envpilot}
     username: ${database.username}
     password: ${database.password}
     driver-class-name: org.postgresql.Driver

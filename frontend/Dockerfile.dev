@@ -1,0 +1,13 @@
+# Dev image: runs the CRA dev server with hot reloading. Source is
+# bind-mounted by docker-compose.dev.yml; node_modules is installed here so
+# the container's own copy (not the host's) is used at runtime.
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

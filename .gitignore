@@ -27,4 +27,7 @@ uploads/
 *.tmp
 
 # Netlify
-frontend/.netlify/ 
+frontend/.netlify/
+
+# Docker Compose local secrets
+/.env
