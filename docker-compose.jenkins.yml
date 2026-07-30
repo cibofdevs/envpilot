@@ -1,0 +1,47 @@
+# Local Jenkins for testing different deployment parameter configurations without
+# touching the real remote Jenkins server.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.jenkins.yml up -d --build jenkins
+#
+# Then open http://localhost:8090 (admin / admin123 by default) and point an EnvPilot
+# project's Jenkins Config at http://localhost:8090 (from your host) or http://jenkins:8080
+# (from the backend container), using one of these seeded demo jobs:
+#   - envpilot-demo-git-only     - single Git Parameter "Branch", mirrors the real
+#                                  pay-channel-non-sit job
+#   - envpilot-demo-mixed-params - String/Choice/Boolean/Text parameters, no Git Parameter
+#   - envpilot-demo-no-params    - no parameters at all
+#
+# For the Jenkins Token field, use the admin password above directly - this is local
+# testing only, Jenkins treats a real password identically to an API token for REST calls.
+services:
+  jenkins-demo-repo-seed:
+    image: alpine/git:latest
+    entrypoint: ["/bin/sh", "/seed-demo-repo.sh"]
+    volumes:
+      - ./docker/jenkins/seed-demo-repo.sh:/seed-demo-repo.sh:ro
+      - jenkins_demo_repos:/demo-repos
+    networks:
+      - envpilot
+
+  jenkins:
+    build:
+      context: ./docker/jenkins
+    restart: unless-stopped
+    depends_on:
+      jenkins-demo-repo-seed:
+        condition: service_completed_successfully
+    environment:
+      JENKINS_ADMIN_ID: ${JENKINS_ADMIN_ID:-admin}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-admin123}
+    ports:
+      - "${JENKINS_PORT:-8090}:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - jenkins_demo_repos:/demo-repos:ro
+    networks:
+      - envpilot
+
+volumes:
+  jenkins_home:
+  jenkins_demo_repos:
