@@ -212,7 +212,7 @@ public class AnalyticsController {
         // Deployments by environment
         Map<String, Long> deploymentsByEnvironment = recentDeployments.stream()
             .collect(Collectors.groupingBy(
-                deployment -> deployment.getEnvironment().getName(),
+                deployment -> deployment.getEnvironmentNameOrDefault(),
                 Collectors.counting()
             ));
         analytics.put("deploymentsByEnvironment", deploymentsByEnvironment);
@@ -280,7 +280,7 @@ public class AnalyticsController {
         List<DeploymentHistory> recentDeployments = deploymentHistoryRepository.findByCreatedAtAfter(thirtyDaysAgo);
         
         Map<String, List<DeploymentHistory>> deploymentsByEnv = recentDeployments.stream()
-            .collect(Collectors.groupingBy(d -> d.getEnvironment().getName()));
+            .collect(Collectors.groupingBy(DeploymentHistory::getEnvironmentNameOrDefault));
         
         for (Map.Entry<String, List<DeploymentHistory>> entry : deploymentsByEnv.entrySet()) {
             String envName = entry.getKey();
@@ -413,7 +413,7 @@ public class AnalyticsController {
         // Response times by environment (based on actual deployment data)
         Map<String, Double> responseTimesByEnvironment = new HashMap<>();
         Map<String, List<DeploymentHistory>> deploymentsByEnv = deployments.stream()
-            .collect(Collectors.groupingBy(d -> d.getEnvironment().getName()));
+            .collect(Collectors.groupingBy(DeploymentHistory::getEnvironmentNameOrDefault));
         
         for (String envName : deploymentsByEnv.keySet()) {
             List<DeploymentHistory> envDeployments = deploymentsByEnv.get(envName);
@@ -505,7 +505,7 @@ public class AnalyticsController {
         // Environment health (based on recent deployment success)
         Map<String, Object> environmentHealth = new HashMap<>();
         Map<String, List<DeploymentHistory>> deploymentsByEnvForHealth = deployments.stream()
-            .collect(Collectors.groupingBy(d -> d.getEnvironment().getName()));
+            .collect(Collectors.groupingBy(DeploymentHistory::getEnvironmentNameOrDefault));
         
         for (Map.Entry<String, List<DeploymentHistory>> entry : deploymentsByEnvForHealth.entrySet()) {
             String envName = entry.getKey();

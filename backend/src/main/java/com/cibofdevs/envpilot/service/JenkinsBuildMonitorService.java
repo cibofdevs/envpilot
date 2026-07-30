@@ -296,11 +296,14 @@ public class JenkinsBuildMonitorService {
             if (deploymentOpt.isPresent()) {
                 DeploymentHistory deployment = deploymentOpt.get();
                 
-                // Force load lazy associations
+                // Force load lazy associations (environment is optional - some projects
+                // don't require one)
                 deployment.getProject().getName();
-                deployment.getEnvironment().getName();
+                if (deployment.getEnvironment() != null) {
+                    deployment.getEnvironment().getName();
+                }
                 deployment.getTriggeredBy().getEmail();
-                
+
                 // Check if email notifications are enabled
                 if (featureFlagService.isEmailNotificationsEnabled()) {
                     if ("SUCCESS".equals(result)) {
@@ -346,10 +349,13 @@ public class JenkinsBuildMonitorService {
             DeploymentHistory deployment = deploymentOpt.get();
             
             // Force load lazy associations to prevent LazyInitializationException
+            // (environment is optional - some projects don't require one)
             deployment.getProject().getName();
-            deployment.getEnvironment().getName();
+            if (deployment.getEnvironment() != null) {
+                deployment.getEnvironment().getName();
+            }
             deployment.getTriggeredBy().getEmail();
-            
+
             // Update build info
             deployment.setJenkinsBuildNumber(buildNumber);
             deployment.setJenkinsBuildUrl(buildInfo.path("url").asText());

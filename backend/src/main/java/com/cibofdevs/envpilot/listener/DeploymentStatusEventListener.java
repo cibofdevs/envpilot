@@ -77,7 +77,7 @@ public class DeploymentStatusEventListener {
         // Create bell notification for successful deployment
         try {
             String projectName = event.getDeployment().getProject().getName();
-            String envName = event.getDeployment().getEnvironment().getName();
+            String envName = event.getDeployment().getEnvironmentNameOrDefault();
             String version = event.getDeployment().getVersion();
             String buildNumberText = event.getDeployment().getJenkinsBuildNumber() != null ? 
                 " (Build #" + event.getDeployment().getJenkinsBuildNumber() + ")" : "";
@@ -135,7 +135,7 @@ public class DeploymentStatusEventListener {
         // Create bell notification for failed deployment
         try {
             String projectName = event.getDeployment().getProject().getName();
-            String envName = event.getDeployment().getEnvironment().getName();
+            String envName = event.getDeployment().getEnvironmentNameOrDefault();
             String version = event.getDeployment().getVersion();
             String buildNumberText = event.getDeployment().getJenkinsBuildNumber() != null ? 
                 " (Build #" + event.getDeployment().getJenkinsBuildNumber() + ")" : "";
