@@ -18,6 +18,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
     jenkinsJobName: '',
     jenkinsUsername: '',
     jenkinsToken: '',
+    requireEnvironmentSelection: true,
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,6 +39,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
           jenkinsUsername: jenkinsConfig.jenkinsUsername || '',
           // Don't overwrite token if it exists
           jenkinsToken: jenkinsConfig.hasJenkinsToken ? prev.jenkinsToken : '',
+          requireEnvironmentSelection: jenkinsConfig.requireEnvironmentSelection !== false,
         }));
       }
     } catch (error) {
@@ -54,6 +56,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
         jenkinsJobName: project.jenkinsJobName || '',
         jenkinsUsername: project.jenkinsUsername || '',
         jenkinsToken: project.jenkinsToken || '',
+        requireEnvironmentSelection: project.requireEnvironmentSelection !== false,
       });
       fetchJenkinsConfig();
     }
@@ -70,13 +73,29 @@ export default function JenkinsConfig({ project, onUpdate }) {
     setTestResult(null);
   };
 
+  const handleToggleRequireEnvironment = () => {
+    setConfig(prev => ({
+      ...prev,
+      requireEnvironmentSelection: !prev.requireEnvironmentSelection
+    }));
+    setMessage(null);
+    setTestResult(null);
+  };
+
+  // Backend's updateConfig endpoint takes a Map<String,String> - stringify the boolean
+  // rather than relying on Jackson's scalar coercion.
+  const buildConfigPayload = () => ({
+    ...config,
+    requireEnvironmentSelection: String(config.requireEnvironmentSelection)
+  });
+
   const handleSave = async (e) => {
     e.preventDefault();
     try {
       setSaving(true);
       setMessage(null);
-      
-      const response = await jenkinsAPI.updateConfig(project.id, config);
+
+      const response = await jenkinsAPI.updateConfig(project.id, buildConfigPayload());
       
       if (response.data.success) {
         setMessage({
@@ -120,7 +139,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
       setTestResult(null);
       
       // First save the config if it's changed
-      await jenkinsAPI.updateConfig(project.id, config);
+      await jenkinsAPI.updateConfig(project.id, buildConfigPayload());
       
       const response = await jenkinsAPI.testConnection(project.id);
       
@@ -356,6 +375,32 @@ export default function JenkinsConfig({ project, onUpdate }) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Deployment Behavior Section */}
+        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+          <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            <ServerIcon className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-400" />
+            Deployment Behavior
+          </h4>
+          <label className="flex items-start space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={config.requireEnvironmentSelection}
+              onChange={handleToggleRequireEnvironment}
+              className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Require environment selection for deployments
+              </span>
+              <span className="block text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Turn this off if this project's Jenkins job has no environment concept at all
+                (e.g. it only uses a Git Parameter branch field). The deploy form will skip
+                the Environment dropdown entirely for this project.
+              </span>
+            </span>
+          </label>
         </div>
 
         {/* Configuration Status */}

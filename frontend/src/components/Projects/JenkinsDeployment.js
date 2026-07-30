@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { jenkinsAPI, projectsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Common/Toast';
-import { 
-  PlayIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
+import { Combobox, Transition } from '@headlessui/react';
+import {
+  PlayIcon,
+  CheckCircleIcon,
+  XCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
 import BuildLogs from './BuildLogs';
 
 export default function JenkinsDeployment({ project }) {
@@ -20,6 +22,12 @@ export default function JenkinsDeployment({ project }) {
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
   const [version, setVersion] = useState('');
   const [notes, setNotes] = useState('');
+  const [branch, setBranch] = useState('');
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const [branchQuery, setBranchQuery] = useState('');
+  const [jobParameters, setJobParameters] = useState([]);
+  const [paramValues, setParamValues] = useState({});
   const [deploying, setDeploying] = useState(false);
   const [buildStatus, setBuildStatus] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
@@ -69,7 +77,7 @@ export default function JenkinsDeployment({ project }) {
 
   const fetchAvailableBuilds = useCallback(async () => {
     if (!isJenkinsConfigured()) return;
-    
+
     try {
       const response = await jenkinsAPI.getRecentBuilds(project.id, 20);
       if (response.data.success && response.data.builds) {
@@ -80,17 +88,68 @@ export default function JenkinsDeployment({ project }) {
     }
   }, [project.id, isJenkinsConfigured]);
 
+  // Some Jenkins jobs require a Branch build parameter (e.g. via the Git
+  // Parameter plugin) — fetch its choices so the form can offer the same
+  // list Jenkins itself would show, instead of triggering a build with no
+  // branch and failing.
+  const fetchGitBranches = useCallback(async () => {
+    if (!isJenkinsConfigured()) return;
+
+    try {
+      setLoadingBranches(true);
+      const response = await jenkinsAPI.getGitBranches(project.id);
+      if (response.data.success) {
+        setBranchOptions(response.data.branches || []);
+      }
+    } catch (error) {
+      console.error('Error fetching git branches:', error);
+    } finally {
+      setLoadingBranches(false);
+    }
+  }, [project.id, isJenkinsConfigured]);
+
+  // Every parameter the Jenkins job actually declares (String, Text, Boolean, Choice,
+  // Password, Git Parameter, etc.) - lets the deploy form render exactly what a given
+  // job needs instead of a fixed field set. The Git Parameter one (if any) is excluded
+  // from rendering here since it's already handled by the dedicated Branch combobox above.
+  const fetchJobParameters = useCallback(async () => {
+    if (!isJenkinsConfigured()) return;
+
+    try {
+      const response = await jenkinsAPI.getJobParameters(project.id);
+      if (response.data.success) {
+        const params = response.data.parameters || [];
+        setJobParameters(params);
+        setParamValues((prev) => {
+          const next = { ...prev };
+          params.forEach((param) => {
+            if (param.type !== 'GIT_PARAMETER' && !(param.name in next)) {
+              next[param.name] = param.type === 'BOOLEAN' ? (param.defaultValue === 'true') : (param.defaultValue || '');
+            }
+          });
+          return next;
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching job parameters:', error);
+    }
+  }, [project.id, isJenkinsConfigured]);
+
   useEffect(() => {
     if (project) {
       fetchEnvironments();
       fetchBuildStatus();
       fetchAvailableBuilds();
+      fetchGitBranches();
+      fetchJobParameters();
     }
     return () => {
       if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
       if (autoRefreshTimeout.current) clearTimeout(autoRefreshTimeout.current);
     };
-  }, [project, fetchEnvironments, fetchBuildStatus, fetchAvailableBuilds]);
+  }, [project, fetchEnvironments, fetchBuildStatus, fetchAvailableBuilds, fetchGitBranches, fetchJobParameters]);
+
+  const requiresEnvironment = project.requireEnvironmentSelection !== false;
 
   const startAutoRefreshBuildStatus = () => {
     if (autoRefreshInterval.current) clearInterval(autoRefreshInterval.current);
@@ -110,40 +169,55 @@ export default function JenkinsDeployment({ project }) {
       return;
     }
     
-    if (!selectedEnvironment) {
+    if (requiresEnvironment && !selectedEnvironment) {
       showError('Please select an environment');
       return;
     }
 
     // Validate access based on selected environment
-    const selectedEnvObj = environments.find(env => env.id.toString() === selectedEnvironment);
-    if (selectedEnvObj && !canDeployToEnvironment(selectedEnvObj.name)) {
-      showError('Access denied. You can only deploy to development environment. Staging and production deployments are restricted to Admin users.');
+    if (requiresEnvironment) {
+      const selectedEnvObj = environments.find(env => env.id.toString() === selectedEnvironment);
+      if (selectedEnvObj && !canDeployToEnvironment(selectedEnvObj.name)) {
+        showError('Access denied. You can only deploy to development environment. Staging and production deployments are restricted to Admin users.');
+        return;
+      }
+    }
+
+    if (branchOptions.length > 0 && !branch) {
+      showError('Please select a branch');
       return;
     }
 
     try {
       setDeploying(true);
-      
-      const response = await jenkinsAPI.deployProject(
-        project.id,
-        selectedEnvironment,
-        version || undefined,
-        notes || undefined
-      );
+
+      const jenkinsParameters = {};
+      jobParameters.forEach((param) => {
+        if (param.type !== 'GIT_PARAMETER' && paramValues[param.name] !== undefined && paramValues[param.name] !== '') {
+          jenkinsParameters[param.name] = String(paramValues[param.name]);
+        }
+      });
+
+      const response = await jenkinsAPI.deployProject(project.id, requiresEnvironment ? selectedEnvironment : undefined, {
+        version: version || undefined,
+        notes: notes || undefined,
+        branch: branch || undefined,
+        jenkinsParameters
+      });
 
       if (response.data.success) {
         showSuccess(response.data.message);
-        
+
         // Note: Bell notification will only be shown when deployment is completed (SUCCESS/FAILED)
         // to avoid spam notifications during trigger phase
-        
+
         // Save the successfully deployed environment
         saveSelectedEnvironment(selectedEnvironment);
-        
+
         // Clear form
         setVersion('');
         setNotes('');
+        setBranch('');
         
         // Start auto-refresh build status
         setTimeout(() => {
@@ -247,26 +321,161 @@ export default function JenkinsDeployment({ project }) {
         </div>
         <div className="p-6">
           <form onSubmit={handleDeploy} className="space-y-6">
-            {/* Environment Selection */}
-            <div>
-              <label htmlFor="environment" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Environment *
-              </label>
-              <select
-                id="environment"
-                value={selectedEnvironment}
-                onChange={(e) => setSelectedEnvironment(e.target.value)}
-                className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
-                required
-              >
-                <option value="">Select an environment</option>
-                {environments.map((env) => (
-                  <option key={env.id} value={env.id} className="py-2">
-                    {env.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Environment Selection (skipped entirely for projects that don't require one) */}
+            {requiresEnvironment && (
+              <div>
+                <label htmlFor="environment" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Environment *
+                </label>
+                <select
+                  id="environment"
+                  value={selectedEnvironment}
+                  onChange={(e) => setSelectedEnvironment(e.target.value)}
+                  className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                  required
+                >
+                  <option value="">Select an environment</option>
+                  {environments.map((env) => (
+                    <option key={env.id} value={env.id} className="py-2">
+                      {env.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Branch Selection (only shown when the Jenkins job has a Git Parameter branch field) */}
+            {(branchOptions.length > 0 || loadingBranches) && (
+              <div>
+                <label htmlFor="branch" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Branch *
+                </label>
+                <Combobox value={branch} onChange={setBranch} disabled={loadingBranches}>
+                  <div className="relative">
+                    <Combobox.Input
+                      id="branch"
+                      className="block w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                      displayValue={(branchName) => branchName || ''}
+                      onChange={(e) => setBranchQuery(e.target.value)}
+                      placeholder={loadingBranches ? 'Loading branches...' : 'Search or select a branch...'}
+                      autoComplete="off"
+                      required
+                    />
+                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                    </Combobox.Button>
+                    <Transition
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                      afterLeave={() => setBranchQuery('')}
+                    >
+                      <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-1 shadow-lg focus:outline-none">
+                        {(() => {
+                          const filteredBranches = branchQuery === ''
+                            ? branchOptions
+                            : branchOptions.filter((branchName) =>
+                                branchName.toLowerCase().includes(branchQuery.toLowerCase())
+                              );
+
+                          if (filteredBranches.length === 0) {
+                            return (
+                              <div className="px-4 py-2 text-gray-500 dark:text-gray-400">
+                                No branches found.
+                              </div>
+                            );
+                          }
+
+                          return filteredBranches.map((branchName) => (
+                            <Combobox.Option
+                              key={branchName}
+                              value={branchName}
+                              className={({ active }) =>
+                                `relative cursor-pointer select-none py-2 pl-4 pr-10 ${
+                                  active ? 'bg-primary-600 text-white' : 'text-gray-900 dark:text-gray-100'
+                                }`
+                              }
+                            >
+                              {({ selected, active }) => (
+                                <>
+                                  <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                    {branchName}
+                                  </span>
+                                  {selected && (
+                                    <span
+                                      className={`absolute inset-y-0 right-0 flex items-center pr-3 ${
+                                        active ? 'text-white' : 'text-primary-600'
+                                      }`}
+                                    >
+                                      <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </Combobox.Option>
+                          ));
+                        })()}
+                      </Combobox.Options>
+                    </Transition>
+                  </div>
+                </Combobox>
+              </div>
+            )}
+
+            {/* Dynamic parameters - whatever else the Jenkins job declares (String, Text,
+                Boolean, Choice, Password), rendered from live parameter discovery. The Git
+                Parameter one (if any) is excluded here since the Branch combobox above
+                already handles it. */}
+            {jobParameters.filter((param) => param.type !== 'GIT_PARAMETER').map((param) => (
+              <div key={param.name}>
+                <label htmlFor={`param-${param.name}`} className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  {param.name}
+                </label>
+                {param.description && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{param.description}</p>
+                )}
+                {param.type === 'BOOLEAN' ? (
+                  <label className="inline-flex items-center">
+                    <input
+                      id={`param-${param.name}`}
+                      type="checkbox"
+                      checked={!!paramValues[param.name]}
+                      onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enabled</span>
+                  </label>
+                ) : param.type === 'CHOICE' ? (
+                  <select
+                    id={`param-${param.name}`}
+                    value={paramValues[param.name] || ''}
+                    onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                  >
+                    {(param.choices || []).map((choice) => (
+                      <option key={choice} value={choice}>{choice}</option>
+                    ))}
+                  </select>
+                ) : param.type === 'TEXT' ? (
+                  <textarea
+                    id={`param-${param.name}`}
+                    value={paramValues[param.name] || ''}
+                    onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
+                    rows={3}
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200 resize-none"
+                  />
+                ) : (
+                  <input
+                    id={`param-${param.name}`}
+                    type={param.type === 'PASSWORD' ? 'password' : 'text'}
+                    value={paramValues[param.name] || ''}
+                    onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: e.target.value }))}
+                    className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 transition-colors duration-200"
+                  />
+                )}
+              </div>
+            ))}
 
             {/* Version Input */}
             <div>

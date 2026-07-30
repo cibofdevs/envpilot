@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-envpilot}
+      POSTGRES_USER: ${DB_USERNAME:-envpilot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-envpilot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - envpilot
+
+  vault:
+    image: hashicorp/vault:1.15
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-envpilot-dev-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://127.0.0.1:8200
+    ports:
+      - "${VAULT_PORT:-8200}:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - envpilot
+
+  vault-init:
+    image: hashicorp/vault:1.15
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_TOKEN:-envpilot-dev-token}
+      DB_USERNAME: ${DB_USERNAME:-envpilot}
+      DB_PASSWORD: ${DB_PASSWORD:-envpilot}
+      JWT_SECRET: ${JWT_SECRET:-change-me-super-secret-please-override}
+      EMAIL_USERNAME: ${EMAIL_USERNAME:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+    entrypoint: ["/bin/sh", "/vault-init.sh"]
+    volumes:
+      - ./docker/vault/init.sh:/vault-init.sh:ro
+    networks:
+      - envpilot
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      VAULT_URL: http://vault:8200
+      VAULT_TOKEN: ${VAULT_TOKEN:-envpilot-dev-token}
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-envpilot}
+    ports:
+      - "${BACKEND_PORT:-9095}:9095"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9095/actuator/health | grep -q '\"db\":{\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 10
+    networks:
+      - envpilot
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:9095/api}
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL:-ws://localhost:9095}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - envpilot
+
+networks:
+  envpilot:
+    driver: bridge
+
+volumes:
+  postgres_data:

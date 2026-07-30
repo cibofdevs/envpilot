@@ -144,7 +144,7 @@ class NotificationService {
   // Deployment notifications
   async showDeploymentNotification(deployment) {
     const title = `🚀 Deployment ${deployment.status}`;
-    const body = `${deployment.project.name} - ${deployment.environment.name}\nVersion: ${deployment.version}`;
+    const body = `${deployment.project.name} - ${deployment.environment?.name || 'Unassigned'}\nVersion: ${deployment.version}`;
     
     return this.showNotification(title, {
       body,

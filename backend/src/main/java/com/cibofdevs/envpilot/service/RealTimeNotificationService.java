@@ -23,7 +23,7 @@ public class RealTimeNotificationService {
         notification.put("type", "deployment_status_update");
         notification.put("deploymentId", deployment.getId());
         notification.put("projectName", deployment.getProject().getName());
-        notification.put("environmentName", deployment.getEnvironment().getName());
+        notification.put("environmentName", deployment.getEnvironmentNameOrDefault());
         notification.put("status", deployment.getStatus());
         notification.put("version", deployment.getVersion());
         notification.put("triggeredBy", deployment.getTriggeredBy().getName());

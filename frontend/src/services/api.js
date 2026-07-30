@@ -202,16 +202,30 @@ export const settingsAPI = {
 
 // Jenkins API
 export const jenkinsAPI = {
-  // Deploy project using backend deployment endpoint (which also triggers Jenkins)
-  deployProject: (projectId, environmentId, version, notes, envName) => {
-    const data = { 
+  // Deploy project using backend deployment endpoint (which also triggers Jenkins).
+  // environmentId is optional - projects that don't require an Environment selection
+  // omit it from the query string entirely rather than sending "undefined".
+  deployProject: (projectId, environmentId, { version, notes, envName, branch, jenkinsParameters } = {}) => {
+    const data = {
       version: version
     };
     if (notes) data.notes = notes;
     if (envName) data.envName = envName;
-    return api.post(`/projects/${projectId}/deploy?environmentId=${environmentId}`, data);
+    if (branch) data.branch = branch;
+    if (jenkinsParameters && Object.keys(jenkinsParameters).length > 0) data.jenkinsParameters = jenkinsParameters;
+    const query = environmentId ? `?environmentId=${environmentId}` : '';
+    return api.post(`/projects/${projectId}/deploy${query}`, data);
   },
-  
+
+  // Get available Git branches for the project's Jenkins job, if it has a
+  // Git Parameter branch field configured
+  getGitBranches: (projectId) => api.get(`/jenkins/branches/${projectId}`),
+
+  // Get every parameter the project's Jenkins job declares (String, Text, Boolean,
+  // Choice, Password, Git Parameter, etc.), so the deploy form can render exactly
+  // what that job needs
+  getJobParameters: (projectId) => api.get(`/jenkins/parameters/${projectId}`),
+
   // Get last build status
   getBuildStatus: (projectId) => api.get(`/jenkins/status/${projectId}`),
   

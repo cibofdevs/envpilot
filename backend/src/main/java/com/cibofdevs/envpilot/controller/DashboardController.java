@@ -389,8 +389,8 @@ public class DashboardController {
                 deploymentMap.put("id", deployment.getId());
                 deploymentMap.put("projectId", deployment.getProject().getId());
                 deploymentMap.put("projectName", deployment.getProject().getName());
-                deploymentMap.put("environmentId", deployment.getEnvironment().getId());
-                deploymentMap.put("environmentName", deployment.getEnvironment().getName());
+                deploymentMap.put("environmentId", deployment.getEnvironment() != null ? deployment.getEnvironment().getId() : null);
+                deploymentMap.put("environmentName", deployment.getEnvironmentNameOrDefault());
                 deploymentMap.put("version", deployment.getVersion());
                 deploymentMap.put("status", deployment.getStatus().name());
                 deploymentMap.put("notes", deployment.getNotes());

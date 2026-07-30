@@ -1,0 +1,61 @@
+jenkins:
+  systemMessage: "EnvPilot local demo Jenkins - for testing deployment parameter configurations"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin123}"
+  authorizationStrategy: loggedInUsersCanDoAnything
+
+jobs:
+  - script: |
+      freeStyleJob('envpilot-demo-git-only') {
+        description('Mirrors the real pay-channel-non-sit job: a single Git Parameter branch field, nothing else.')
+        parameters {
+          gitParameterDefinition {
+            name('Branch')
+            type('PT_BRANCH')
+            branch('')
+            branchFilter('.*')
+            tagFilter('*')
+            useRepository('')
+            quickFilterEnabled(false)
+            defaultValue('master')
+            selectedValue('DEFAULT')
+            sortMode('ASCENDING_SMART')
+          }
+        }
+        scm {
+          git {
+            remote {
+              url('file:///demo-repos/pay-channel-demo.git')
+            }
+            branch('$Branch')
+          }
+        }
+        steps {
+          shell('echo "Deploying branch: $Branch"')
+        }
+      }
+  - script: |
+      freeStyleJob('envpilot-demo-mixed-params') {
+        description('String/Choice/Boolean/Text parameters, no Git Parameter - exercises the full dynamic parameter form.')
+        parameters {
+          stringParam('RELEASE_TAG', '', 'Release tag/version to deploy')
+          choiceParam('DEPLOY_TARGET', ['canary', 'blue', 'green'], 'Deployment target slot')
+          booleanParam('SKIP_TESTS', false, 'Skip test suite before deploying')
+          textParam('CHANGE_SUMMARY', '', 'Summary of changes in this release')
+        }
+        steps {
+          shell('echo "Deploying $RELEASE_TAG to $DEPLOY_TARGET (skipTests=$SKIP_TESTS)"')
+        }
+      }
+  - script: |
+      freeStyleJob('envpilot-demo-no-params') {
+        description('Zero parameters - verifies the "nothing extra needed" deploy path.')
+        steps {
+          shell('echo "Deploying with no parameters"')
+        }
+      }

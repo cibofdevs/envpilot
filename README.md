@@ -30,6 +30,8 @@ EnvPilot is a modern, open source platform for managing multi-environment deploy
 - Jenkins (for CI/CD integration)
 - PostgreSQL (default, can be changed)
 
+Alternatively, use [Docker](#running-with-docker) and only Docker/Docker Compose are required.
+
 ### Installation
 
 #### 1. Clone the repository
@@ -61,6 +63,43 @@ npm start
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:9095
+
+### Running with Docker
+
+The whole stack (frontend, backend, PostgreSQL, and a dev-mode Vault instance for secrets) can be run with Docker Compose — no local Node/Java/Maven/Postgres install required.
+
+```bash
+cp .env.docker.example .env
+# Edit .env: set EMAIL_USERNAME/EMAIL_PASSWORD (Gmail app password) if you need
+# outgoing email, and change JWT_SECRET/VAULT_TOKEN for anything beyond local dev.
+
+docker compose up -d --build
+```
+
+This builds and starts:
+
+- `postgres` — application database
+- `vault` — Vault dev server (the backend reads DB/JWT/email credentials from it, matching how `application.yml` is configured in production)
+- `vault-init` — one-shot container that seeds the secrets above into Vault, then exits
+- `backend` — Spring Boot API on http://localhost:9095
+- `frontend` — React app served via nginx on http://localhost:3000
+
+Check status with `docker compose ps` and logs with `docker compose logs -f backend`. Stop everything with `docker compose down` (add `-v` to also drop the Postgres volume).
+
+#### Development mode (hot reload)
+
+For local development with live code reload, layer `docker-compose.dev.yml` on top of the base file:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+This keeps `postgres`/`vault`/`vault-init` as-is, but runs `backend` and `frontend` from dev images instead:
+
+- `backend` — runs `mvn spring-boot:run` against the bind-mounted `./backend`, restarting automatically whenever a source file changes
+- `frontend` — runs the CRA dev server (`npm start`) against the bind-mounted `./frontend` on http://localhost:3000, with webpack hot reload
+
+Edit files under `backend/src` or `frontend/src` on your host and the running containers will pick up the changes.
 
 ## Usage
 

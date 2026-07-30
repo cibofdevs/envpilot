@@ -1,0 +1,13 @@
+# Dev image: source is bind-mounted by docker-compose.dev.yml, this just
+# provides the Maven/JDK toolchain plus a watch loop that restarts the app
+# whenever a source file changes.
+FROM maven:3.9-eclipse-temurin-17
+
+WORKDIR /app
+
+COPY docker-entrypoint-dev.sh /usr/local/bin/docker-entrypoint-dev.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-dev.sh
+
+EXPOSE 9095
+
+CMD ["docker-entrypoint-dev.sh"]

@@ -42,7 +42,7 @@ public class EmailService {
             String htmlContent = generateSuccessEmailHtml(
                 user.getName(),
                 deployment.getProject().getName(),
-                deployment.getEnvironment().getName(),
+                deployment.getEnvironmentNameOrDefault(),
                 deployment.getVersion() + buildNumberText,
                 deployment.getTriggeredBy().getName(),
                 deployment.getCompletedAt() != null ? 
@@ -62,7 +62,7 @@ public class EmailService {
             System.out.println("   SMTP Auth: " + smtpAuth);
             System.out.println("   Deployment ID: " + deployment.getId());
             System.out.println("   Project: " + deployment.getProject().getName());
-            System.out.println("   Environment: " + deployment.getEnvironment().getName());
+            System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
             System.out.println("   Version: " + deployment.getVersion());
             System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
             
@@ -91,7 +91,7 @@ public class EmailService {
             String htmlContent = generateFailureEmailHtml(
                 user.getName(),
                 deployment.getProject().getName(),
-                deployment.getEnvironment().getName(),
+                deployment.getEnvironmentNameOrDefault(),
                 deployment.getVersion() + buildNumberText,
                 deployment.getTriggeredBy().getName(),
                 deployment.getCompletedAt() != null ? 
@@ -110,7 +110,7 @@ public class EmailService {
             System.out.println("   SMTP Auth: " + smtpAuth);
             System.out.println("   Deployment ID: " + deployment.getId());
             System.out.println("   Project: " + deployment.getProject().getName());
-            System.out.println("   Environment: " + deployment.getEnvironment().getName());
+            System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
             System.out.println("   Version: " + deployment.getVersion());
             System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
             

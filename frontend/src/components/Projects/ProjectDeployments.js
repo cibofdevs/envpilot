@@ -811,7 +811,7 @@ const ProjectDeployments = ({ projectId }) => {
                       Version {deployment.version}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Environment: {deployment.environment.name}
+                      Environment: {deployment.environment?.name || 'Unassigned'}
                     </p>
                     {(deployment.jenkinsBuildNumber || deployment.buildNumber) ? (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
