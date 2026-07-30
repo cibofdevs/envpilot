@@ -6,17 +6,17 @@ const DeploymentAnalytics = ({ data }) => {
     return (
       <div className="space-y-6">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
-            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div key={i} className="card p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-white/10 rounded w-1/4 mb-4"></div>
+            <div className="h-32 bg-gray-200 dark:bg-white/10 rounded"></div>
           </div>
         ))}
       </div>
     );
   }
 
-  const renderMetricCard = (title, value, subtitle, icon, color = 'blue') => (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+  const renderMetricCard = (title, value, subtitle, icon, color = 'primary') => (
+    <div className="card p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
@@ -32,7 +32,7 @@ const DeploymentAnalytics = ({ data }) => {
     </div>
   );
 
-  const renderBarChart = (data, title, color = 'blue') => {
+  const renderBarChart = (data, title, color = 'primary') => {
     if (!data || Object.keys(data).length === 0) {
       return (
         <div className="text-center py-8">
@@ -61,7 +61,7 @@ const DeploymentAnalytics = ({ data }) => {
                     {value}
                   </p>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2">
                   <div 
                     className={`bg-${color}-500 h-2 rounded-full transition-all duration-300`}
                     style={{ width: `${(value / maxValue) * 100}%` }}
@@ -102,7 +102,7 @@ const DeploymentAnalytics = ({ data }) => {
                     name === 'successful' ? 'bg-green-500' :
                     name === 'failed' ? 'bg-red-500' :
                     name === 'pending' ? 'bg-yellow-500' :
-                    'bg-blue-500'
+                    'bg-primary-500'
                   }`}></div>
                   <span className="text-sm text-gray-900 dark:text-gray-100 capitalize">
                     {name}
@@ -146,7 +146,7 @@ const DeploymentAnalytics = ({ data }) => {
           totalDeployments,
           'All time',
           <RocketLaunchIcon className="h-6 w-6" />, 
-          'blue'
+          'primary'
         )}
         {renderMetricCard(
           'Success Rate',
@@ -174,23 +174,23 @@ const DeploymentAnalytics = ({ data }) => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Deployments by Environment */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-6">
           {renderBarChart(deploymentsByEnvironment, 'Deployments by Environment', 'green')}
         </div>
 
         {/* Deployments by Status */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-6">
           {renderPieChart(deploymentsByStatus, 'Deployments by Status')}
         </div>
       </div>
 
       {/* Recent Deployments */}
       {recentDeployments && recentDeployments.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="card p-6">
           <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Recent Deployments</h4>
           <div className="space-y-3">
             {recentDeployments.slice(0, 10).map((deployment, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className={`w-2 h-2 rounded-full ${
                     deployment.status === 'SUCCESS' ? 'bg-green-500' :

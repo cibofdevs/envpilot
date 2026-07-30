@@ -64,7 +64,7 @@ export const ToastProvider = ({ children }) => {
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9994]">
           <div className="bg-white rounded-lg p-6 flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
             <p className="text-gray-700">{loadingMessage}</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export const ToastProvider = ({ children }) => {
               toast.type === 'success' ? 'bg-green-500 text-white' :
               toast.type === 'error' ? 'bg-red-500 text-white' :
               toast.type === 'warning' ? 'bg-yellow-500 text-white' :
-              'bg-blue-500 text-white'
+              'bg-primary-500 text-white'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ const Toast = ({ show, type, message, onClose }) => {
       case 'warning':
         return 'bg-yellow-50 border-yellow-200 text-yellow-800';
       default:
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return 'bg-primary-50 border-primary-200 text-primary-800';
     }
   };
 
@@ -136,7 +136,7 @@ const Toast = ({ show, type, message, onClose }) => {
       case 'error':
         return <XCircleIcon className="h-5 w-5 text-red-400" />;
       default:
-        return <CheckCircleIcon className="h-5 w-5 text-blue-400" />;
+        return <CheckCircleIcon className="h-5 w-5 text-primary-400" />;
     }
   };
 

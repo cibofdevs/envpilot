@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { projectAssignmentAPI, usersAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Common/Toast';
-import { 
-  UserPlusIcon, 
-  UserMinusIcon, 
+import {
+  UserPlusIcon,
+  UserMinusIcon,
   UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+
+// Portal ensures the modal escapes the card's containing block (backdrop-blur
+// on an ancestor makes `fixed` positioning relative to that ancestor, not the viewport).
+function ModalPortal({ children }) {
+  return ReactDOM.createPortal(children, document.body);
+}
 
 const ProjectAssignments = ({ projectId, projectName }) => {
   const { isAdmin } = useAuth();
@@ -107,13 +114,13 @@ const ProjectAssignments = ({ projectId, projectName }) => {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'OWNER':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+        return 'bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200';
       case 'MEMBER':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200';
       case 'VIEWER':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-300';
     }
   };
 
@@ -133,7 +140,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
+      <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Project Assignments</h3>
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
@@ -146,12 +153,12 @@ const ProjectAssignments = ({ projectId, projectName }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
+    <div className="card p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Project Assignments</h3>
         <button
           onClick={() => setShowAssignModal(true)}
-          className="inline-flex items-center px-3 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+          className="btn-primary"
         >
           <UserPlusIcon className="h-4 w-4 mr-2" />
           Assign Users
@@ -161,7 +168,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
       {Array.isArray(assignments) && assignments.length > 0 ? (
         <div className="space-y-3">
           {assignments.map((assignment) => (
-            <div key={assignment.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div key={assignment.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
               <div className="flex items-center space-x-3">
                 <UsersIcon className="h-5 w-5 text-gray-400" />
                 <div>
@@ -213,8 +220,9 @@ const ProjectAssignments = ({ projectId, projectName }) => {
 
       {/* Assign Users Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <ModalPortal>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="card relative top-20 mx-auto p-6 w-96">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -234,10 +242,10 @@ const ProjectAssignments = ({ projectId, projectName }) => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Select Users
                   </label>
-                  <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md">
+                  <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-white/10 rounded-lg">
                     {Array.isArray(users) && users.length > 0 ? (
                       users.map((user) => (
-                        <label key={user.id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <label key={user.id} className="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-white/5">
                           <input
                             type="checkbox"
                             checked={selectedUsers.includes(user.id)}
@@ -271,7 +279,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
                   <select
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="input-field"
                   >
                     <option value="MEMBER">Member</option>
                     <option value="VIEWER">Viewer</option>
@@ -288,7 +296,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="input-field"
                     placeholder="Add notes about this assignment..."
                   />
                 </div>
@@ -297,14 +305,14 @@ const ProjectAssignments = ({ projectId, projectName }) => {
                 <div className="flex justify-end space-x-3">
                   <button
                     onClick={() => setShowAssignModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                    className="btn-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAssignUsers}
                     disabled={assigning || selectedUsers.length === 0}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {assigning ? 'Assigning...' : 'Assign Users'}
                   </button>
@@ -313,6 +321,7 @@ const ProjectAssignments = ({ projectId, projectName }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

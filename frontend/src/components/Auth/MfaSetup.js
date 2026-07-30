@@ -105,7 +105,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
 
   if (loading && step === 1) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Setting up MFA...</p>
@@ -115,11 +115,11 @@ const MfaSetup = ({ tempToken, onComplete }) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-transparent py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 card p-6 sm:p-8">
         <div>
-          <div className="mx-auto h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-            <QrCodeIcon className="h-6 w-6 text-white" />
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 shadow-glow-lg flex items-center justify-center">
+            <QrCodeIcon className="h-7 w-7 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             Setup Two-Factor Authentication
@@ -138,7 +138,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
               </p>
               
               {qrCodeUrl && (
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-center">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-white/10 flex justify-center">
                   <QRCode 
                     value={qrCodeUrl} 
                     size={250}
@@ -152,7 +152,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
               <div className="mt-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or enter this code manually:</p>
                 <div className="flex items-center justify-center space-x-2">
-                  <code className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+                  <code className="bg-gray-100 dark:bg-white/10 px-3 py-2 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
                     {showSecret ? secret : '••••••••••••••••'}
                   </code>
                   <button
@@ -179,7 +179,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
 
             <button
               onClick={() => setStep(2)}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 transition-colors duration-200"
+              className="btn-primary w-full justify-center"
             >
               Next: Verify Code
             </button>
@@ -199,7 +199,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
                 maxLength="6"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 text-center text-lg font-mono bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="input-field text-center text-lg font-mono"
                 placeholder="000000"
               />
             </div>
@@ -207,14 +207,14 @@ const MfaSetup = ({ tempToken, onComplete }) => {
             <div className="flex space-x-3">
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 transition-colors duration-200"
+                className="btn-secondary flex-1 inline-flex justify-center"
               >
                 Back
               </button>
               <button
                 onClick={handleVerification}
                 disabled={loading || verificationCode.length !== 6}
-                className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="btn-primary flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Verifying...' : 'Verify'}
               </button>
@@ -230,10 +230,10 @@ const MfaSetup = ({ tempToken, onComplete }) => {
                 Save these backup codes in a secure location. You can use them to access your account if you lose your authenticator device:
               </p>
               
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-white/5 p-4 rounded-lg border border-gray-200 dark:border-white/10">
                 <div className="grid grid-cols-2 gap-2">
                   {backupCodes.map((code, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-700 p-2 rounded border border-gray-200 dark:border-gray-600 text-center font-mono text-sm text-gray-900 dark:text-gray-100">
+                    <div key={index} className="bg-white dark:bg-white/5 p-2 rounded border border-gray-200 dark:border-white/10 text-center font-mono text-sm text-gray-900 dark:text-gray-100">
                       {code}
                     </div>
                   ))}
@@ -247,7 +247,7 @@ const MfaSetup = ({ tempToken, onComplete }) => {
 
             <button
               onClick={handleComplete}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-900 transition-colors duration-200"
+              className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-surface-900 transition-all duration-200"
             >
               Complete Setup
             </button>

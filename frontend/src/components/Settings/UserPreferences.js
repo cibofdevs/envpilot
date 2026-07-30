@@ -121,9 +121,9 @@ const UserPreferences = () => {
       )}
 
       {/* UI Preferences */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="card p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-          <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+          <span className="w-2 h-2 bg-primary-500 rounded-full mr-3"></span>
           User Interface
         </h3>
         <div className="space-y-4">
@@ -134,7 +134,7 @@ const UserPreferences = () => {
             <select
               value={localPreferences.ui.theme}
               onChange={(e) => handleUIChange('theme', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="input-field"
             >
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -145,14 +145,14 @@ const UserPreferences = () => {
       </div>
 
       {/* Dashboard Preferences */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="card p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-          <ArrowPathIcon className="w-5 h-5 mr-2 text-blue-500" />
+          <ArrowPathIcon className="w-5 h-5 mr-2 text-primary-500" />
           Dashboard Settings
         </h3>
         <div className="space-y-6">
           {/* Auto Refresh Toggle */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <ArrowPathIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -169,7 +169,7 @@ const UserPreferences = () => {
                 onChange={(e) => handleDashboardChange('autoRefresh', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-white/10 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-white/10 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
             </label>
           </div>
 
@@ -183,8 +183,8 @@ const UserPreferences = () => {
               <select
                 value={localPreferences.dashboard.refreshInterval}
                 onChange={(e) => handleDashboardChange('refreshInterval', parseInt(e.target.value))}
-                className={`w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none cursor-pointer ${
-                  !localPreferences.dashboard.autoRefresh ? 'cursor-not-allowed bg-gray-100 dark:bg-gray-600' : ''
+                className={`input-field pr-10 appearance-none cursor-pointer ${
+                  !localPreferences.dashboard.autoRefresh ? 'cursor-not-allowed bg-gray-100 dark:bg-white/5' : ''
                 }`}
                 disabled={!localPreferences.dashboard.autoRefresh}
               >
@@ -212,7 +212,7 @@ const UserPreferences = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium shadow-sm"
+          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? (
             <div className="flex items-center">

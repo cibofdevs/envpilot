@@ -117,14 +117,14 @@ export default function ProjectOverview({ project, onUpdate }) {
                 });
                 setShowEditModal(true);
               }}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-white/10 shadow-sm text-sm leading-4 font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <PencilIcon className="h-4 w-4 mr-1" />
               Edit
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 dark:text-red-300 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-800/60 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-700 dark:text-red-300 bg-white dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               <TrashIcon className="h-4 w-4 mr-1" />
               Delete
@@ -197,7 +197,7 @@ export default function ProjectOverview({ project, onUpdate }) {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300 text-center">
+        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
           <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {loadingStats ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
@@ -207,7 +207,7 @@ export default function ProjectOverview({ project, onUpdate }) {
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Environments</div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300 text-center">
+        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
           <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {loadingStats ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
@@ -217,7 +217,7 @@ export default function ProjectOverview({ project, onUpdate }) {
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">Deployments</div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300 text-center">
+        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
           <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {loadingStats ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
@@ -232,8 +232,8 @@ export default function ProjectOverview({ project, onUpdate }) {
       {/* Edit Modal */}
       {showEditModal && (
         <ModalPortal>
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+            <div className="card relative top-20 mx-auto p-6 w-96">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Edit Project</h3>
                 <button
@@ -243,13 +243,13 @@ export default function ProjectOverview({ project, onUpdate }) {
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
-              
+
               {error && (
-                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 rounded">
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg">
                   {error}
                 </div>
               )}
-              
+
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -261,11 +261,11 @@ export default function ProjectOverview({ project, onUpdate }) {
                     name="name"
                     value={editForm.name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="input-field"
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Description
@@ -276,11 +276,11 @@ export default function ProjectOverview({ project, onUpdate }) {
                     value={editForm.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="input-field"
                     placeholder="Enter project description..."
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Status
@@ -290,26 +290,26 @@ export default function ProjectOverview({ project, onUpdate }) {
                     name="status"
                     value={editForm.status}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="input-field"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                     <option value="ARCHIVED">Archived</option>
                   </select>
                 </div>
-                
+
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="btn-secondary"
                     disabled={loading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                    className="btn-primary disabled:opacity-50"
                     disabled={loading}
                   >
                     {loading ? 'Updating...' : 'Update Project'}
@@ -324,8 +324,8 @@ export default function ProjectOverview({ project, onUpdate }) {
       {/* Delete Modal */}
       {showDeleteModal && (
         <ModalPortal>
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+            <div className="card relative top-20 mx-auto p-6 w-96">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Delete Project</h3>
                 <button
@@ -335,7 +335,7 @@ export default function ProjectOverview({ project, onUpdate }) {
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="flex items-center mb-4">
                 <ExclamationTriangleIcon className="h-12 w-12 text-red-600 dark:text-red-400 mr-4" />
                 <div>
@@ -347,24 +347,24 @@ export default function ProjectOverview({ project, onUpdate }) {
                   </p>
                 </div>
               </div>
-              
+
               {error && (
-                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 rounded">
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg">
                   {error}
                 </div>
               )}
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="btn-secondary"
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                  className="btn-danger disabled:opacity-50"
                   disabled={loading}
                 >
                   {loading ? 'Deleting...' : 'Delete Project'}

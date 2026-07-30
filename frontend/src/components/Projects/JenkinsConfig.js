@@ -205,9 +205,9 @@ export default function JenkinsConfig({ project, onUpdate }) {
 
       {/* Messages */}
       {message && (
-        <div className={`rounded-md p-4 ${
-          message.type === 'success' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800' : 
-          'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800'
+        <div className={`rounded-lg p-4 ${
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 
+          'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
         }`}>
           <div className="flex">
             <div className="flex-shrink-0">
@@ -230,9 +230,9 @@ export default function JenkinsConfig({ project, onUpdate }) {
 
       {/* Test Result */}
       {testResult && (
-        <div className={`rounded-md p-4 ${
-          testResult.type === 'success' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800' : 
-          'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800'
+        <div className={`rounded-lg p-4 ${
+          testResult.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 
+          'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
         }`}>
           <div className="flex">
             <div className="flex-shrink-0">
@@ -265,7 +265,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
       {/* Configuration Form */}
       <form onSubmit={handleSave} className="space-y-8">
         {/* Server Configuration Section */}
-        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+        <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-xl">
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <ServerIcon className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-400" />
             Server Configuration
@@ -283,7 +283,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
                   value={config.jenkinsUrl}
                   onChange={handleInputChange}
                   placeholder="https://jenkins.example.com:8080"
-                  className="block w-full pl-4 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  className="block w-full pl-4 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   required
                 />
               </div>
@@ -305,7 +305,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
                   value={config.jenkinsJobName}
                   onChange={handleInputChange}
                   placeholder="my-deployment-job"
-                  className="block w-full pl-4 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  className="block w-full pl-4 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   required
                 />
               </div>
@@ -318,9 +318,9 @@ export default function JenkinsConfig({ project, onUpdate }) {
         </div>
 
         {/* Authentication Section */}
-        <div className="bg-blue-50 dark:bg-blue-900 p-6 rounded-lg">
+        <div className="bg-primary-50 dark:bg-primary-900/30 p-6 rounded-xl">
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-            <KeyIcon className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+            <KeyIcon className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />
             Authentication
           </h4>
           <div className="space-y-4">
@@ -337,7 +337,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
                   value={config.jenkinsUsername}
                   onChange={handleInputChange}
                   placeholder="jenkins-user"
-                  className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   required
                 />
               </div>
@@ -360,7 +360,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
                   value={config.jenkinsToken}
                   onChange={handleInputChange}
                   placeholder="••••••••••••••••••••••••••••••••"
-                  className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 text-sm bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   required
                 />
               </div>
@@ -369,7 +369,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
                   <InformationCircleIcon className="h-4 w-4 mr-1" />
                   Use Jenkins API token for better security
                 </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">
+                <p className="text-xs text-primary-600 dark:text-primary-400">
                   Generate token: Jenkins → User → Configure → API Token
                 </p>
               </div>
@@ -378,7 +378,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
         </div>
 
         {/* Deployment Behavior Section */}
-        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+        <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-xl">
           <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <ServerIcon className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-400" />
             Deployment Behavior
@@ -388,7 +388,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
               type="checkbox"
               checked={config.requireEnvironmentSelection}
               onChange={handleToggleRequireEnvironment}
-              className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500"
+              className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-white/20 text-primary-600 focus:ring-primary-500"
             />
             <span>
               <span className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -424,7 +424,7 @@ export default function JenkinsConfig({ project, onUpdate }) {
             type="button"
             onClick={handleTestConnection}
             disabled={!isConfigComplete || testing}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-white/10 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {testing ? (
               <>

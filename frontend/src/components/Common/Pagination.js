@@ -69,12 +69,12 @@ const Pagination = ({
   const { startItem, endItem } = getItemRange();
 
   return (
-    <div className={`flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700 pagination-container ${className}`}>
+    <div className={`flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-white/10 pagination-container ${className}`}>
       <div className="flex items-center space-x-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 pagination-button"
+          className="p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 pagination-button"
           aria-label="Previous page"
           title="Previous page (←)"
         >
@@ -91,7 +91,7 @@ const Pagination = ({
                 ? 'bg-primary-600 text-white shadow-md'
                 : page === '...'
                 ? 'text-gray-400 cursor-default'
-                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
             aria-label={page === '...' ? 'More pages' : `Go to page ${page}`}
             aria-current={page === currentPage ? 'page' : undefined}
@@ -104,7 +104,7 @@ const Pagination = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 pagination-button"
+          className="p-2 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 pagination-button"
           aria-label="Next page"
           title="Next page (→)"
         >
@@ -135,7 +135,7 @@ const Pagination = ({
                 max={totalPages}
                 value={jumpToPage}
                 onChange={(e) => setJumpToPage(e.target.value)}
-                className="w-16 text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-16 text-xs border border-gray-300 dark:border-white/10 rounded px-2 py-1 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="Page"
               />
               <button

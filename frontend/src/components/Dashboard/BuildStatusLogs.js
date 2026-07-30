@@ -47,7 +47,7 @@ const BuildStatusLogs = () => {
         setCurrentPage(newPage);
         setIsPageTransitioning(false);
         // Smooth scroll to top of the component
-        const element = document.querySelector('.bg-white.dark\\:bg-gray-900.shadow.rounded-lg.p-6');
+        const element = document.querySelector('[data-build-status-logs]');
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -202,7 +202,7 @@ const BuildStatusLogs = () => {
     const pageNumbers = getPageNumbers();
 
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-gray-200 dark:border-white/10 space-y-3 sm:space-y-0">
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
               <span>
@@ -226,7 +226,7 @@ const BuildStatusLogs = () => {
           <button
             onClick={goToPreviousPage}
             disabled={currentPage === 1}
-            className="inline-flex items-center px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center px-2 py-1 text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Previous page"
           >
             <ChevronLeftIcon className="h-4 w-4" />
@@ -237,7 +237,7 @@ const BuildStatusLogs = () => {
             <>
               <button
                 onClick={() => goToPage(1)}
-                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
               >
                 1
               </button>
@@ -252,10 +252,10 @@ const BuildStatusLogs = () => {
             <button
               key={page}
               onClick={() => goToPage(page)}
-              className={`inline-flex items-center px-3 py-1 text-sm rounded-md transition-colors ${
+              className={`inline-flex items-center px-3 py-1 text-sm rounded-lg transition-colors ${
                 page === currentPage
                   ? 'bg-primary-600 text-white'
-                  : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10'
               }`}
             >
               {page}
@@ -270,7 +270,7 @@ const BuildStatusLogs = () => {
               )}
               <button
                 onClick={() => goToPage(maxPage)}
-                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center px-3 py-1 text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
               >
                 {maxPage}
               </button>
@@ -281,7 +281,7 @@ const BuildStatusLogs = () => {
           <button
             onClick={goToNextPage}
             disabled={currentPage === maxPage}
-            className="inline-flex items-center px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center px-2 py-1 text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Next page"
           >
             <ChevronRightIcon className="h-4 w-4" />
@@ -293,7 +293,7 @@ const BuildStatusLogs = () => {
 
   const getBuildStatusIcon = (build) => {
     if (build.building) {
-      return <ClockIcon className="h-5 w-5 text-blue-500" />;
+      return <ClockIcon className="h-5 w-5 text-primary-500" />;
     }
     
     switch (build.result) {
@@ -364,7 +364,7 @@ const BuildStatusLogs = () => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
+      <div className="card p-6" data-build-status-logs>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Build Logs</h3>
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
@@ -378,12 +378,12 @@ const BuildStatusLogs = () => {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
+      <div className="card p-6" data-build-status-logs>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Build Logs</h3>
                   <button
           onClick={fetchProjectsAndBuilds}
-          className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
         >
           <ArrowPathIcon className="h-4 w-4 mr-1" />
           Retry
@@ -398,7 +398,7 @@ const BuildStatusLogs = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
+    <div className="card p-6" data-build-status-logs>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Build Logs</h3>
         <div className="flex items-center space-x-3">
@@ -413,7 +413,7 @@ const BuildStatusLogs = () => {
                     setItemsPerPage(newValue);
                     localStorage.setItem('buildLogsItemsPerPage', newValue.toString());
                   }}
-                  className="text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="text-sm bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg px-2 py-1 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                 <option value={3}>3</option>
                 <option value={5}>5</option>
@@ -427,7 +427,7 @@ const BuildStatusLogs = () => {
           <button
             onClick={fetchProjectsAndBuilds}
             disabled={loading}
-            className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-3 py-1 text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
             {loading ? 'Refreshing...' : 'Refresh'}
@@ -456,7 +456,7 @@ const BuildStatusLogs = () => {
                 const project = projects.find(p => p.id === build.projectId);
               
                 return (
-                  <div key={`${build.projectId}-${build.number}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <div key={`${build.projectId}-${build.number}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                     <div className="flex items-center space-x-3">
                       {getBuildStatusIcon(build)}
                       <div>
@@ -466,12 +466,12 @@ const BuildStatusLogs = () => {
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {getBuildStatusText(build)} • {formatDuration(build.duration)} • {formatTimestamp(build.timestamp)}
                           {build.triggeredByUserName && (
-                            <span className="ml-2 text-blue-600 dark:text-blue-400">
+                            <span className="ml-2 text-primary-600 dark:text-primary-400">
                               • Triggered by {build.triggeredByUserName}
                             </span>
                           )}
                           {build.isFromDeploymentHistory && (
-                            <span className="ml-2 text-purple-600 dark:text-purple-400">
+                            <span className="ml-2 text-accent-600 dark:text-accent-400">
                               • From Database
                             </span>
                           )}
@@ -483,13 +483,13 @@ const BuildStatusLogs = () => {
                       {!build.isFromDeploymentHistory ? (
                         <button
                           onClick={() => handleViewLogs(project, build.number)}
-                          className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                          className="inline-flex items-center px-2 py-1 text-xs bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-200 rounded-md hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
                         >
                           <DocumentTextIcon className="h-3 w-3 mr-1" />
                           View Logs
                         </button>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-md">
+                        <span className="inline-flex items-center px-2 py-1 text-xs bg-accent-100 dark:bg-accent-900/40 text-accent-700 dark:text-accent-200 rounded-md">
                           <DocumentTextIcon className="h-3 w-3 mr-1" />
                           Deployment Record
                         </span>

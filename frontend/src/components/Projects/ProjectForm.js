@@ -19,8 +19,8 @@ export default function ProjectForm() {
   if (!isAdmin()) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-        <p className="text-gray-600 mb-6">Only administrators can create projects.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Access Denied</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">Only administrators can create projects.</p>
         <Link to="/projects" className="btn-primary">
           Back to Projects
         </Link>
@@ -67,8 +67,8 @@ export default function ProjectForm() {
       </div>
 
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Create New Project</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Create New Project</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Set up a new project to manage environments and deployments
         </p>
       </div>

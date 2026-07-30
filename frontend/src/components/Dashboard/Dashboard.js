@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { dashboardAPI } from '../../services/api';
-import UserWelcomeCard from './UserWelcomeCard';
 import StatsCards from './StatsCards';
 import RecentProjects from './RecentProjects';
 import ActiveEnvironments from './ActiveEnvironments';
@@ -93,7 +92,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <UserWelcomeCard />
       {stats && <StatsCards stats={stats} userRole={user?.role} />}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <RecentProjects 

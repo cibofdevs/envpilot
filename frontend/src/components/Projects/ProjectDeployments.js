@@ -764,7 +764,7 @@ const ProjectDeployments = ({ projectId }) => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
             title="Refresh deployment history"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
@@ -782,7 +782,7 @@ const ProjectDeployments = ({ projectId }) => {
                 initWebSocket();
               }
             }}
-            className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+            className="inline-flex items-center px-3 py-1.5 text-sm bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
             title="Reconnect WebSocket"
           >
             <ArrowPathIcon className="h-4 w-4 mr-1" />
@@ -801,7 +801,7 @@ const ProjectDeployments = ({ projectId }) => {
           {paginatedDeployments.map((deployment) => (
             <div
               key={deployment.id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="card p-4 hover:shadow-md dark:hover:shadow-glow transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -827,7 +827,7 @@ const ProjectDeployments = ({ projectId }) => {
                     {deployment.status === 'PENDING' && deployment.jenkinsBuildNumber && (
                       <button
                         onClick={() => handleManualSync(deployment.id)}
-                        className="mt-2 inline-flex items-center px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                        className="mt-2 inline-flex items-center px-2 py-1 text-xs bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
                         title="Force sync status from Jenkins"
                       >
                         <ArrowPathIcon className="h-3 w-3 mr-1" />
@@ -861,7 +861,7 @@ const ProjectDeployments = ({ projectId }) => {
               </div>
               
               {deployment.triggeredBy && (
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Triggered by: {deployment.triggeredBy.name}
                   </p>
@@ -881,7 +881,7 @@ const ProjectDeployments = ({ projectId }) => {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50"
+            className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 disabled:opacity-50"
           >
             Previous
           </button>
@@ -897,7 +897,7 @@ const ProjectDeployments = ({ projectId }) => {
                  className={`px-3 py-1 rounded font-medium ${
                    num === page 
                      ? 'bg-primary-600 text-white' 
-                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900'
+                     : 'bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900/40'
                  }`}
                >
                  {num}
@@ -908,7 +908,7 @@ const ProjectDeployments = ({ projectId }) => {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50"
+            className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 disabled:opacity-50"
           >
             Next
           </button>

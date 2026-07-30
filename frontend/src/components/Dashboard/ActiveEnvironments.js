@@ -134,7 +134,7 @@ export default function ActiveEnvironments({ environments, userRole }) {
 
   return (
     <div className="card">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-white/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Active Environments</h3>
@@ -153,7 +153,7 @@ export default function ActiveEnvironments({ environments, userRole }) {
                 value={itemsPerPage}
                 onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
                 disabled={isLoading}
-                className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm border border-gray-300 dark:border-white/10 rounded-lg px-2 py-1 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value={3}>3</option>
                 <option value={5}>5</option>
@@ -176,7 +176,7 @@ export default function ActiveEnvironments({ environments, userRole }) {
         </div>
       )}
       
-      <div className="divide-y divide-gray-200 dark:divide-gray-700 relative">
+      <div className="divide-y divide-gray-200 dark:divide-white/10 relative">
         {environments.length === 0 ? (
           <div className="px-6 py-8 text-center">
             <ServerIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
@@ -195,7 +195,7 @@ export default function ActiveEnvironments({ environments, userRole }) {
             {currentEnvironments.map((environment, index) => (
               <div 
                 key={environment.id} 
-                className="px-6 py-4 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-800 pagination-item-enter"
+                className="px-6 py-4 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-white/5 pagination-item-enter"
                 style={{
                   animationDelay: `${index * 50}ms`
                 }}

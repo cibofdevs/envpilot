@@ -60,7 +60,7 @@ const SystemMonitoring = () => {
       case 'warning':
         return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20';
       case 'info':
-        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
+        return 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20';
       default:
         return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20';
     }
@@ -104,7 +104,7 @@ const SystemMonitoring = () => {
           <button
             onClick={loadMonitoringData}
             disabled={loading}
-            className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+            className="btn-secondary inline-flex items-center disabled:opacity-50"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -115,13 +115,13 @@ const SystemMonitoring = () => {
       {monitoringData && (
         <>
           {/* System Health */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="card p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               System Health
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {monitoringData.health && Object.entries(monitoringData.health).map(([component, health]) => (
-                <div key={component} className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div key={component} className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                   <div className="flex-shrink-0">
                     {getStatusIcon(health.status)}
                   </div>
@@ -150,16 +150,16 @@ const SystemMonitoring = () => {
           </div>
 
           {/* Resource Usage */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="card p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               Resource Usage
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {monitoringData.resources && Object.entries(monitoringData.resources).map(([resource, data]) => (
-                <div key={resource} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div key={resource} className="p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                   <div className="flex items-center space-x-3 mb-3">
                     {resource === 'cpu' ? (
-                      <CpuChipIcon className="h-6 w-6 text-blue-500" />
+                      <CpuChipIcon className="h-6 w-6 text-primary-500" />
                     ) : (
                       <ServerIcon className="h-6 w-6 text-green-500" />
                     )}
@@ -174,13 +174,13 @@ const SystemMonitoring = () => {
                           <span className="text-gray-600 dark:text-gray-400">Usage</span>
                           <span className="font-medium text-gray-900 dark:text-gray-100">{data.usage}</span>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
+                        <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 mt-1">
                           <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-primary-500 h-2 rounded-full transition-all duration-300"
                             style={{ 
                               width: `${parseFloat(data.usage)}%`,
                               backgroundColor: parseFloat(data.usage) > 80 ? '#ef4444' : 
-                                              parseFloat(data.usage) > 60 ? '#f59e0b' : '#3b82f6'
+                                              parseFloat(data.usage) > 60 ? '#f59e0b' : '#6366f1'
                             }}
                           ></div>
                         </div>
@@ -208,18 +208,18 @@ const SystemMonitoring = () => {
           </div>
 
           {/* System Issues */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="card p-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               System Issues
             </h3>
             {monitoringData.issues && monitoringData.issues.length > 0 ? (
               <div className="space-y-4">
                 {monitoringData.issues.map((issue, index) => (
-                  <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                     <div className={`w-3 h-3 rounded-full mt-2 ${
                       issue.severity === 'critical' ? 'bg-red-500' :
                       issue.severity === 'warning' ? 'bg-yellow-500' :
-                      'bg-blue-500'
+                      'bg-primary-500'
                     }`}></div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">

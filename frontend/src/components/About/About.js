@@ -150,11 +150,11 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">About {appName}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">About {appName}</h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {appName} is a modern, comprehensive platform designed to simplify and streamline 
             multi-environment deployment management with advanced analytics, security, automation capabilities, 
@@ -163,8 +163,8 @@ const About = () => {
         </div>
 
         {/* Mission Statement */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Our Mission</h2>
+        <div className="card p-8 mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Our Mission</h2>
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
             {appName} was built to address the growing complexity of managing multiple projects 
             across diverse environments. We believe that deployment management should be intuitive, 
@@ -176,13 +176,13 @@ const About = () => {
         </div>
 
         {/* Recent Updates */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg shadow-sm border border-blue-200 dark:border-blue-700 p-8 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">Recent Updates</h2>
+        <div className="welcome-card p-8 mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">Recent Updates</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recentUpdates.map((update, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <update.icon className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{update.title}</h3>
+              <div key={index} className="card p-6">
+                <update.icon className="h-8 w-8 text-primary-600 dark:text-primary-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{update.title}</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">{update.description}</p>
               </div>
             ))}
@@ -191,12 +191,12 @@ const About = () => {
 
         {/* Features Grid */}
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">Key Features</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">Key Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow duration-200">
-                <feature.icon className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+              <div key={index} className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300">
+                <feature.icon className="h-8 w-8 text-primary-600 dark:text-primary-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">{feature.description}</p>
               </div>
             ))}
@@ -204,16 +204,16 @@ const About = () => {
         </div>
 
         {/* Technology Stack */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Technology Stack</h2>
+        <div className="card p-8 mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">Technology Stack</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {techStack.map((stack, index) => (
               <div key={index}>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{stack.category}</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{stack.category}</h3>
                 <ul className="space-y-2">
                   {stack.items.map((item, itemIndex) => (
                     <li key={itemIndex} className="text-gray-600 dark:text-gray-300 flex items-center">
-                      <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full mr-3"></span>
+                      <span className="w-2 h-2 bg-primary-600 dark:bg-primary-400 rounded-full mr-3"></span>
                       {item}
                     </li>
                   ))}
@@ -224,10 +224,10 @@ const About = () => {
         </div>
 
         {/* Version & Copyright */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
+        <div className="card p-8 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Version Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Version Information</h3>
               <div className="space-y-2 text-gray-600 dark:text-gray-300">
                 <p><span className="font-medium">Current Version:</span> {appVersion}</p>
                 <p><span className="font-medium">Release Date:</span> January 2025</p>
@@ -237,13 +237,13 @@ const About = () => {
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Contact & Links</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Contact & Links</h3>
               <div className="space-y-2">
                 <a 
                   href="https://github.com/cibofdevs/envpilot" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200 block"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors duration-200 block"
                 >
                   GitHub Repository
                 </a>
@@ -251,7 +251,7 @@ const About = () => {
                   href="https://github.com/cibofdevs/envpilot/issues" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200 block"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors duration-200 block"
                 >
                   Report Issues
                 </a>
@@ -259,7 +259,7 @@ const About = () => {
                   href="https://github.com/cibofdevs/envpilot/blob/main/README.md" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200 block"
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors duration-200 block"
                 >
                   Documentation
                 </a>
@@ -278,7 +278,7 @@ const About = () => {
         <div className="text-center mt-8">
           <Link
             to="/dashboard"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200"
+            className="btn-primary"
           >
             Back to Dashboard
           </Link>

@@ -1,13 +1,11 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    <linearGradient id="ep-bg" x1="2" y1="1" x2="30" y2="31" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
   </defs>
-  <circle cx="16" cy="16" r="15" fill="url(#bgGradient)" stroke="#1E40AF" stroke-width="1"/>
-  <g transform="translate(16, 19)">
-    <path d="M-5 -3 L-5 3 L5 3 L5 2 L-4 2 L-4 0.5 L4 0.5 L4 -0.5 L-4 -0.5 L-4 -2 L5 -2 L5 -3 Z" fill="#FFFFFF"/>
-    <path d="M6 -3 L6 3 L11 3 L13 2 L13 0 L11 -1 L6 -1 Z M7 -2 L10 -2 L12 -1 L12 1 L10 2 L7 2 Z" fill="#FFFFFF"/>
-  </g>
+  <rect width="32" height="32" fill="url(#ep-bg)"/>
+  <path d="M24 8 L8 13.5 L15 17 Z" fill="#ffffff"/>
+  <path d="M24 8 L15 17 L18.5 24 Z" fill="#ffffff" fill-opacity="0.62"/>
 </svg>

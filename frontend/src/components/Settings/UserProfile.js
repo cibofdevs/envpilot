@@ -232,10 +232,10 @@ const UserProfile = () => {
             <img
               src={config.getStaticFileUrl(photoPreview)}
               alt="Profile"
-              className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+              className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-white/10"
             />
           ) : (
-            <div className="h-20 w-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-3xl text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600">
+            <div className="h-20 w-20 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center text-3xl text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-white/10">
               <span>👤</span>
             </div>
           )}
@@ -250,7 +250,7 @@ const UserProfile = () => {
           />
           <button
             type="button"
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800"
+            className="btn-secondary disabled:opacity-50"
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
             disabled={uploadingPhoto}
           >
@@ -289,7 +289,7 @@ const UserProfile = () => {
       )}
 
       {/* Profile Information */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 border border-gray-200 dark:border-white/10">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Profile Information</h3>
         
         <form onSubmit={handleProfileSubmit} className="space-y-4">
@@ -303,9 +303,7 @@ const UserProfile = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                errors.name ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-              }`}
+              className={`input-field ${errors.name ? 'border-red-500 dark:border-red-400' : ''}`}
               placeholder="Enter your full name"
             />
             {errors.name && (
@@ -323,9 +321,7 @@ const UserProfile = () => {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                errors.email ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-              }`}
+              className={`input-field ${errors.email ? 'border-red-500 dark:border-red-400' : ''}`}
               placeholder="Enter your email address"
             />
             {errors.email && (
@@ -341,7 +337,7 @@ const UserProfile = () => {
               type="text"
               value={profile?.role || ''}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+              className="input-field bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Role cannot be changed</p>
           </div>
@@ -350,7 +346,7 @@ const UserProfile = () => {
             <button
               type="submit"
               disabled={saving}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -359,7 +355,7 @@ const UserProfile = () => {
       </div>
 
       {/* Password Change */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 border border-gray-200 dark:border-white/10">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Change Password</h3>
           {!showPasswordForm && (
@@ -384,9 +380,7 @@ const UserProfile = () => {
                 name="currentPassword"
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                  errors.currentPassword ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.currentPassword ? 'border-red-500 dark:border-red-400' : ''}`}
                 placeholder="Enter current password"
               />
               {errors.currentPassword && (
@@ -404,9 +398,7 @@ const UserProfile = () => {
                 name="newPassword"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                  errors.newPassword ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.newPassword ? 'border-red-500 dark:border-red-400' : ''}`}
                 placeholder="Enter new password"
               />
               {errors.newPassword && (
@@ -424,9 +416,7 @@ const UserProfile = () => {
                 name="confirmPassword"
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                  errors.confirmPassword ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-                }`}
+                className={`input-field ${errors.confirmPassword ? 'border-red-500 dark:border-red-400' : ''}`}
                 placeholder="Confirm new password"
               />
               {errors.confirmPassword && (
@@ -446,14 +436,14 @@ const UserProfile = () => {
                   });
                   setErrors({});
                 }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={changingPassword}
-                className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {changingPassword ? 'Changing...' : 'Change Password'}
               </button>
@@ -468,7 +458,7 @@ const UserProfile = () => {
 
       {/* Account Information */}
       {profile && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 border border-gray-200 dark:border-white/10">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Account Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>

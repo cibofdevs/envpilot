@@ -62,16 +62,16 @@ const StatusBadge = ({ status, size = 'sm', variant = 'default' }) => {
         icon: ClockIcon,
         text: 'Pending',
         default: {
-          classes: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800',
-          iconClasses: 'text-blue-500 dark:text-blue-200'
+          classes: 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-800',
+          iconClasses: 'text-primary-500 dark:text-primary-200'
         },
         solid: {
-          classes: 'bg-blue-600 text-white border-blue-600',
-          iconClasses: 'text-blue-100'
+          classes: 'bg-primary-600 text-white border-primary-600',
+          iconClasses: 'text-primary-100'
         },
         outline: {
-          classes: 'bg-transparent text-blue-700 border-blue-300 dark:text-blue-200 dark:border-blue-700',
-          iconClasses: 'text-blue-600 dark:text-blue-200'
+          classes: 'bg-transparent text-primary-700 border-primary-300 dark:text-primary-200 dark:border-primary-700',
+          iconClasses: 'text-primary-600 dark:text-primary-200'
         }
       },
       FAILED: {

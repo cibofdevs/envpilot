@@ -203,67 +203,117 @@ public class SystemMonitoringService {
         return appHealth;
     }
 
-    private Map<String, Object> getJenkinsHealth() {
-        Map<String, Object> jenkinsHealth = new HashMap<>();
-        
+    // Live-pinging Jenkins is only done for informational monitoring widgets, so a
+    // short cache is fine and keeps repeated analytics/dashboard loads fast instead
+    // of re-testing every configured project's Jenkins connection on every request.
+    private static final long JENKINS_STATUS_CACHE_TTL_MS = 30_000;
+    private volatile long jenkinsStatusCacheTimestamp = 0;
+    private volatile Map<String, Object> cachedJenkinsHealth;
+    private volatile List<Map<String, Object>> cachedJenkinsIssues;
+
+    /**
+     * Tests Jenkins connectivity for every configured project exactly once, and
+     * derives both the health summary and the issues list from that single pass
+     * (previously getJenkinsHealth()/getJenkinsIssues() each re-tested every
+     * project independently, doubling the number of live Jenkins calls).
+     */
+    private synchronized void refreshJenkinsStatusIfStale() {
+        if (cachedJenkinsHealth != null &&
+                System.currentTimeMillis() - jenkinsStatusCacheTimestamp < JENKINS_STATUS_CACHE_TTL_MS) {
+            return;
+        }
+
+        Map<String, Object> health = new HashMap<>();
+        List<Map<String, Object>> issues = new ArrayList<>();
+
         try {
             List<Project> configuredProjects = projectRepository.findAll().stream()
                 .filter(project -> isJenkinsConfigured(project))
                 .collect(Collectors.toList());
 
             if (configuredProjects.isEmpty()) {
-                jenkinsHealth.put("status", "not_configured");
-                jenkinsHealth.put("uptime", 0.0);
-                jenkinsHealth.put("responseTime", -1);
-                jenkinsHealth.put("lastCheck", LocalDateTime.now().toString());
-                return jenkinsHealth;
-            }
+                health.put("status", "not_configured");
+                health.put("uptime", 0.0);
+                health.put("responseTime", -1);
+                health.put("lastCheck", LocalDateTime.now().toString());
+            } else {
+                int successfulConnections = 0;
+                long totalResponseTime = 0;
+                List<String> errors = new ArrayList<>();
 
-            // Test Jenkins connection for each project
-            int successfulConnections = 0;
-            long totalResponseTime = 0;
-            List<String> errors = new ArrayList<>();
+                for (Project project : configuredProjects) {
+                    String errorMessage = null;
+                    try {
+                        long startTime = System.currentTimeMillis();
+                        Map<String, Object> testResult = jenkinsService.testJenkinsConnectionQuick(project);
+                        long endTime = System.currentTimeMillis();
 
-            for (Project project : configuredProjects) {
-                try {
-                    long startTime = System.currentTimeMillis();
-                    Map<String, Object> testResult = jenkinsService.testJenkinsConnection(project);
-                    long endTime = System.currentTimeMillis();
-                    
-                    if ((Boolean) testResult.get("success")) {
-                        successfulConnections++;
-                        totalResponseTime += (endTime - startTime);
-                    } else {
-                        errors.add(project.getName() + ": " + testResult.get("message"));
+                        if (Boolean.TRUE.equals(testResult.get("success"))) {
+                            successfulConnections++;
+                            totalResponseTime += (endTime - startTime);
+                        } else {
+                            errorMessage = String.valueOf(testResult.get("message"));
+                        }
+                    } catch (Exception e) {
+                        errorMessage = e.getMessage();
                     }
-                } catch (Exception e) {
-                    errors.add(project.getName() + ": " + e.getMessage());
+
+                    if (errorMessage != null) {
+                        errors.add(project.getName() + ": " + errorMessage);
+
+                        Map<String, Object> issue = new HashMap<>();
+                        issue.put("title", "Jenkins connection failed for " + project.getName());
+                        issue.put("component", "Jenkins");
+                        issue.put("environment", "All");
+                        issue.put("severity", "warning");
+                        issue.put("timestamp", LocalDateTime.now().toString());
+                        issue.put("description", "Failed to connect to Jenkins for project: " + project.getName());
+                        Map<String, String> metrics = new HashMap<>();
+                        metrics.put("project", project.getName());
+                        metrics.put("error", errorMessage);
+                        issue.put("metrics", metrics);
+                        issues.add(issue);
+                    }
+                }
+
+                double successRate = (successfulConnections / (double) configuredProjects.size()) * 100;
+                double avgResponseTime = successfulConnections > 0 ? totalResponseTime / (double) successfulConnections : -1;
+
+                health.put("status", successRate > 50 ? "healthy" : "degraded");
+                health.put("uptime", Math.round(successRate * 100.0) / 100.0);
+                health.put("responseTime", avgResponseTime);
+                health.put("lastCheck", LocalDateTime.now().toString());
+                health.put("configuredProjects", configuredProjects.size());
+                health.put("successfulConnections", successfulConnections);
+                if (!errors.isEmpty()) {
+                    health.put("errors", errors);
                 }
             }
-
-            double successRate = (successfulConnections / (double) configuredProjects.size()) * 100;
-            double uptime = successRate;
-            double avgResponseTime = successfulConnections > 0 ? totalResponseTime / (double) successfulConnections : -1;
-
-            jenkinsHealth.put("status", successRate > 50 ? "healthy" : "degraded");
-            jenkinsHealth.put("uptime", Math.round(uptime * 100.0) / 100.0);
-            jenkinsHealth.put("responseTime", avgResponseTime);
-            jenkinsHealth.put("lastCheck", LocalDateTime.now().toString());
-            jenkinsHealth.put("configuredProjects", configuredProjects.size());
-            jenkinsHealth.put("successfulConnections", successfulConnections);
-            if (!errors.isEmpty()) {
-                jenkinsHealth.put("errors", errors);
-            }
-
         } catch (Exception e) {
-            jenkinsHealth.put("status", "error");
-            jenkinsHealth.put("error", e.getMessage());
-            jenkinsHealth.put("uptime", 0.0);
-            jenkinsHealth.put("responseTime", -1);
-            jenkinsHealth.put("lastCheck", LocalDateTime.now().toString());
+            health.put("status", "error");
+            health.put("error", e.getMessage());
+            health.put("uptime", 0.0);
+            health.put("responseTime", -1);
+            health.put("lastCheck", LocalDateTime.now().toString());
+
+            Map<String, Object> issue = new HashMap<>();
+            issue.put("title", "Error checking Jenkins health");
+            issue.put("component", "Jenkins Monitor");
+            issue.put("environment", "System");
+            issue.put("severity", "error");
+            issue.put("timestamp", LocalDateTime.now().toString());
+            issue.put("description", "Failed to check Jenkins health: " + e.getMessage());
+            issues.add(issue);
         }
 
-        return jenkinsHealth;
+        cachedJenkinsHealth = health;
+        cachedJenkinsIssues = issues;
+        jenkinsStatusCacheTimestamp = System.currentTimeMillis();
+    }
+
+    private Map<String, Object> getJenkinsHealth() {
+        refreshJenkinsStatusIfStale();
+        return cachedJenkinsHealth;
     }
 
     private Map<String, Object> getCpuUsage() {
@@ -500,63 +550,8 @@ public class SystemMonitoringService {
     }
 
     private List<Map<String, Object>> getJenkinsIssues() {
-        List<Map<String, Object>> issues = new ArrayList<>();
-        
-        try {
-            List<Project> configuredProjects = projectRepository.findAll().stream()
-                .filter(project -> isJenkinsConfigured(project))
-                .collect(Collectors.toList());
-
-            for (Project project : configuredProjects) {
-                try {
-                    Map<String, Object> testResult = jenkinsService.testJenkinsConnection(project);
-                    
-                    if (!(Boolean) testResult.get("success")) {
-                        Map<String, Object> issue = new HashMap<>();
-                        issue.put("title", "Jenkins connection failed for " + project.getName());
-                        issue.put("component", "Jenkins");
-                        issue.put("environment", "All");
-                        issue.put("severity", "warning");
-                        issue.put("timestamp", LocalDateTime.now().toString());
-                        issue.put("description", "Failed to connect to Jenkins for project: " + project.getName());
-                        
-                        Map<String, String> metrics = new HashMap<>();
-                        metrics.put("project", project.getName());
-                        metrics.put("error", (String) testResult.get("message"));
-                        issue.put("metrics", metrics);
-                        
-                        issues.add(issue);
-                    }
-                } catch (Exception e) {
-                    Map<String, Object> issue = new HashMap<>();
-                    issue.put("title", "Jenkins error for " + project.getName());
-                    issue.put("component", "Jenkins");
-                    issue.put("environment", "All");
-                    issue.put("severity", "error");
-                    issue.put("timestamp", LocalDateTime.now().toString());
-                    issue.put("description", "Jenkins error for project " + project.getName() + ": " + e.getMessage());
-                    
-                    Map<String, String> metrics = new HashMap<>();
-                    metrics.put("project", project.getName());
-                    metrics.put("error", e.getMessage());
-                    issue.put("metrics", metrics);
-                    
-                    issues.add(issue);
-                }
-            }
-
-        } catch (Exception e) {
-            Map<String, Object> issue = new HashMap<>();
-            issue.put("title", "Error checking Jenkins health");
-            issue.put("component", "Jenkins Monitor");
-            issue.put("environment", "System");
-            issue.put("severity", "error");
-            issue.put("timestamp", LocalDateTime.now().toString());
-            issue.put("description", "Failed to check Jenkins health: " + e.getMessage());
-            issues.add(issue);
-        }
-
-        return issues;
+        refreshJenkinsStatusIfStale();
+        return cachedJenkinsIssues;
     }
 
     private List<Map<String, Object>> getPerformanceIssues() {
