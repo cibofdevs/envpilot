@@ -75,16 +75,19 @@ public class DeploymentService {
         deployment.setStatus(DeploymentHistory.Status.PENDING);
         
         DeploymentHistory savedDeployment = deploymentHistoryRepository.save(deployment);
-        
-        // Update environment status to deploying
-        environmentService.deployToEnvironment(environment.getId(), version);
-        
+
+        // Update environment status to deploying (skip when the project doesn't require
+        // an Environment selection - there's nothing to mark as deploying)
+        if (environment != null) {
+            environmentService.deployToEnvironment(environment.getId(), version);
+        }
+
         // Audit logging for deployment creation
         if (featureFlagService.isAuditLoggingEnabled()) {
             System.out.println("📋 AUDIT LOG: Deployment created");
             System.out.println("   User: " + triggeredBy.getName() + " (" + triggeredBy.getEmail() + ")");
             System.out.println("   Project: " + project.getName());
-            System.out.println("   Environment: " + environment.getName());
+            System.out.println("   Environment: " + savedDeployment.getEnvironmentNameOrDefault());
             System.out.println("   Version: " + version);
             System.out.println("   Notes: " + (notes != null ? notes : "-"));
             System.out.println("   Timestamp: " + LocalDateTime.now());
@@ -107,7 +110,7 @@ public class DeploymentService {
         
         System.out.println("🚀 Deployment triggered for Jenkins");
         System.out.println("   Project: " + deployment.getProject().getName());
-        System.out.println("   Environment: " + deployment.getEnvironment().getName());
+        System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
         System.out.println("   Version: " + deployment.getVersion());
         System.out.println("   User: " + deployment.getTriggeredBy().getName());
     }
@@ -166,7 +169,7 @@ public class DeploymentService {
                 
                 System.out.println("🔄 Syncing deployment " + deploymentId + " from Jenkins");
                 System.out.println("   Project: " + deployment.getProject().getName());
-                System.out.println("   Environment: " + deployment.getEnvironment().getName());
+                System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
                 System.out.println("   Current Status: " + deployment.getStatus());
                 System.out.println("   Version: " + deployment.getVersion());
             
@@ -199,7 +202,7 @@ public class DeploymentService {
                     System.out.println("🎯 Jenkins deployment SUCCESS detected for deployment: " + deployment.getId());
                     System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
                     System.out.println("   Project: " + deployment.getProject().getName());
-                    System.out.println("   Environment: " + deployment.getEnvironment().getName());
+                    System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
                     
                     // CRITICAL: Check if Jenkins is still building
                     Boolean isCurrentlyBuilding = (Boolean) buildStatus.get("building");
@@ -354,9 +357,11 @@ public class DeploymentService {
                     deployment.setStatus(DeploymentHistory.Status.SUCCESS);
                     deployment.setCompletedAt(LocalDateTime.now());
                     
-                    // Update environment status to online
-                    environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ONLINE);
-                    
+                    // Update environment status to online (only if this deployment has one)
+                    if (deployment.getEnvironment() != null) {
+                        environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ONLINE);
+                    }
+
                     // Save deployment
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Deployment status saved to database");
@@ -375,7 +380,7 @@ public class DeploymentService {
                     System.out.println("❌ Jenkins deployment FAILURE detected for deployment: " + deployment.getId());
                     System.out.println("   Build Number: " + deployment.getJenkinsBuildNumber());
                     System.out.println("   Project: " + deployment.getProject().getName());
-                    System.out.println("   Environment: " + deployment.getEnvironment().getName());
+                    System.out.println("   Environment: " + deployment.getEnvironmentNameOrDefault());
                     
                     // Verify Jenkins failure is truly finished before proceeding
                     boolean jenkinsFailureTrulyFinished = false;
@@ -513,9 +518,11 @@ public class DeploymentService {
                     deployment.setStatus(DeploymentHistory.Status.FAILED);
                     deployment.setCompletedAt(LocalDateTime.now());
                     
-                    // Update environment status to error
-                    environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ERROR);
-                    
+                    // Update environment status to error (only if this deployment has one)
+                    if (deployment.getEnvironment() != null) {
+                        environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ERROR);
+                    }
+
                     // Save deployment
                     deploymentHistoryRepository.save(deployment);
                     System.out.println("💾 Failed deployment status saved to database");
@@ -564,12 +571,14 @@ public class DeploymentService {
             
             if (status == DeploymentHistory.Status.SUCCESS || status == DeploymentHistory.Status.FAILED) {
                 deployment.setCompletedAt(LocalDateTime.now());
-                
-                // Update environment status
-                if (status == DeploymentHistory.Status.SUCCESS) {
-                    environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ONLINE);
-                } else {
-                    environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ERROR);
+
+                // Update environment status (only if this deployment has one)
+                if (deployment.getEnvironment() != null) {
+                    if (status == DeploymentHistory.Status.SUCCESS) {
+                        environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ONLINE);
+                    } else {
+                        environmentService.updateEnvironmentStatus(deployment.getEnvironment().getId(), Environment.Status.ERROR);
+                    }
                 }
             }
             

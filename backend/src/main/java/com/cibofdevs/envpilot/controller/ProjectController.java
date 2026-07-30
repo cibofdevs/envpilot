@@ -362,16 +362,31 @@ public class ProjectController {
 
     @PostMapping("/{id}/deploy")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DEVELOPER') or hasRole('QA')")
-    public ResponseEntity<Map<String, Object>> deployProject(@PathVariable Long id, 
-                                                          @RequestParam Long environmentId,
+    public ResponseEntity<Map<String, Object>> deployProject(@PathVariable Long id,
+                                                          @RequestParam(required = false) Long environmentId,
                                                           @Valid @RequestBody DeploymentRequest deploymentRequest,
                                                           Authentication authentication) {
         Optional<Project> projectOpt = projectService.getProjectById(id);
-        Optional<Environment> environmentOpt = environmentService.getEnvironmentById(environmentId);
         Map<String, Object> response = new HashMap<>();
-        if (projectOpt.isEmpty() || environmentOpt.isEmpty()) {
+        if (projectOpt.isEmpty()) {
             response.put("success", false);
-            response.put("message", "Project atau environment tidak ditemukan");
+            response.put("message", "Project tidak ditemukan");
+            return ResponseEntity.status(404).body(response);
+        }
+        Project project = projectOpt.get();
+
+        if (project.isRequireEnvironmentSelection() && environmentId == null) {
+            response.put("success", false);
+            response.put("message", "Environment selection is required for this project.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        Optional<Environment> environmentOpt = environmentId != null
+            ? environmentService.getEnvironmentById(environmentId)
+            : Optional.empty();
+        if (environmentId != null && environmentOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Environment tidak ditemukan");
             return ResponseEntity.status(404).body(response);
         }
 
@@ -383,16 +398,17 @@ public class ProjectController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        // Validate deployment access based on role and environment
-        String environmentName = environmentOpt.get().getName().toLowerCase();
         User.Role userRole = triggeredBy.getRole();
-        
-        // Only ADMIN can deploy to staging and production
-        if ((environmentName.equals("staging") || environmentName.equals("production")) && 
-            userRole != User.Role.ADMIN) {
-            response.put("success", false);
-            response.put("message", "Access denied. Only Admin can deploy to environment " + environmentName);
-            return ResponseEntity.status(403).body(response);
+
+        // Only ADMIN can deploy to staging and production (no environment tier ⇒ no tier restriction)
+        if (environmentOpt.isPresent()) {
+            String environmentName = environmentOpt.get().getName().toLowerCase();
+            if ((environmentName.equals("staging") || environmentName.equals("production")) &&
+                userRole != User.Role.ADMIN) {
+                response.put("success", false);
+                response.put("message", "Access denied. Only Admin can deploy to environment " + environmentName);
+                return ResponseEntity.status(403).body(response);
+            }
         }
 
         // Non-admin users can only deploy projects they are assigned to
@@ -408,30 +424,32 @@ public class ProjectController {
         DeploymentHistory deployment = deploymentService.createDeployment(
                 deploymentRequest.getVersion(),
                 deploymentRequest.getNotes(),
-                projectOpt.get(),
-                environmentOpt.get(),
+                project,
+                environmentOpt.orElse(null),
                 triggeredBy
         );
 
         String envNameToSend = deploymentRequest.getEnvName() != null && !deploymentRequest.getEnvName().isEmpty()
             ? deploymentRequest.getEnvName()
-            : environmentOpt.get().getName();
+            : environmentOpt.map(Environment::getName).orElse(null);
         // Trigger Jenkins setelah mencatat deployment history
         boolean jenkinsSuccess = true;
         String jenkinsMsg = "Deployment triggered";
         Integer buildNumber = null;
         try {
-            System.out.println("🚀 ProjectController: Triggering Jenkins job for project: " + projectOpt.get().getName());
-            System.out.println("   Project ID: " + projectOpt.get().getId());
-            System.out.println("   Environment: " + environmentOpt.get().getName());
+            System.out.println("🚀 ProjectController: Triggering Jenkins job for project: " + project.getName());
+            System.out.println("   Project ID: " + project.getId());
+            System.out.println("   Environment: " + environmentOpt.map(Environment::getName).orElse("N/A"));
             System.out.println("   Version: " + deploymentRequest.getVersion());
-            
+
             Map<String, Object> jenkinsResult = jenkinsService.triggerJenkinsJob(
-                projectOpt.get(),
-                environmentOpt.get(),
+                project,
+                environmentOpt.orElse(null),
                 deploymentRequest.getVersion(),
                 deploymentRequest.getNotes(),
+                deploymentRequest.getBranch(),
                 envNameToSend,
+                deploymentRequest.getJenkinsParameters(),
                 triggeredBy
             );
             
@@ -459,9 +477,9 @@ public class ProjectController {
                 // Start monitoring the build
                 jenkinsBuildMonitorService.startMonitoring(
                     deployment.getId(),
-                    projectOpt.get().getName(),
-                    projectOpt.get().getJenkinsJobName(),
-                    projectOpt.get().getJenkinsUrl(),
+                    project.getName(),
+                    project.getJenkinsJobName(),
+                    project.getJenkinsUrl(),
                     buildNumber
                 );
             }

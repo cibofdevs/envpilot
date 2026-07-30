@@ -12,6 +12,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -19,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,14 +35,15 @@ public class JenkinsService {
     /**
      * Trigger Jenkins job with parameters
      */
-    public Map<String, Object> triggerJenkinsJob(Project project, Environment environment, String version, String notes, String envName, User triggeredBy) {
+    public Map<String, Object> triggerJenkinsJob(Project project, Environment environment, String version, String notes,
+            String branch, String envName, Map<String, String> extraParameters, User triggeredBy) {
         Map<String, Object> result = new HashMap<>();
 
         try {
             System.out.println("🚀 Triggering Jenkins job for project: " + project.getName());
             System.out.println("   Project ID: " + project.getId());
             System.out.println("   Jenkins Job: " + project.getJenkinsJobName());
-            System.out.println("   Environment: " + environment.getName());
+            System.out.println("   Environment: " + (environment != null ? environment.getName() : "N/A"));
             System.out.println("   Version: " + version);
             System.out.println("   Triggered By: " + triggeredBy.getName());
             
@@ -50,13 +54,18 @@ public class JenkinsService {
                 return result;
             }
 
-            // Prepare Jenkins URL
+            // Prepare Jenkins URL. Jenkins rejects /buildWithParameters with a 400 ("is
+            // not parameterized") for a job that declares no parameters at all, so use
+            // plain /build for those - any parameters we'd otherwise send (including the
+            // PROJECT_ID/TRIGGERED_BY_* bookkeeping fields) have nowhere to go on such a
+            // job anyway, since Jenkins only maps them onto declared parameter names.
             String jenkinsUrl = project.getJenkinsUrl();
             if (!jenkinsUrl.endsWith("/")) {
                 jenkinsUrl += "/";
             }
-            String buildUrl = jenkinsUrl + "job/" + project.getJenkinsJobName() + "/buildWithParameters";
-            String crumbUrl = jenkinsUrl + "crumbIssuer/api/json";
+            boolean isParameterized = !fetchParameterDefinitions(project).isEmpty();
+            String buildUrl = jenkinsUrl + "job/" + project.getJenkinsJobName()
+                + (isParameterized ? "/buildWithParameters" : "/build");
 
             // Prepare headers with Basic Auth
             HttpHeaders headers = new HttpHeaders();
@@ -65,40 +74,50 @@ public class JenkinsService {
             String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
             headers.set("Authorization", "Basic " + encodedAuth);
 
-            // Ambil crumb dari Jenkins
-            String crumbField = null;
-            String crumbValue = null;
-            try {
-                HttpEntity<String> crumbRequest = new HttpEntity<>(headers);
-                ResponseEntity<String> crumbResponse = restTemplate.exchange(crumbUrl, HttpMethod.GET, crumbRequest, String.class);
-                if (crumbResponse.getStatusCode().is2xxSuccessful()) {
-                    JsonNode crumbJson = objectMapper.readTree(crumbResponse.getBody());
-                    crumbField = crumbJson.get("crumbRequestField").asText();
-                    crumbValue = crumbJson.get("crumb").asText();
-                    headers.set(crumbField, crumbValue);
-                } else {
-                    result.put("success", false);
-                    result.put("message", "Failed to get Jenkins crumb. Status: " + crumbResponse.getStatusCode());
-                    return result;
-                }
-            } catch (Exception e) {
+            if (!addCrumb(project, headers)) {
                 result.put("success", false);
-                result.put("message", "Failed to get Jenkins crumb: " + e.getMessage());
+                result.put("message", "Failed to get Jenkins crumb");
                 return result;
             }
 
-            // Prepare parameters
+            // Prepare parameters. Dynamic parameters (whatever the job actually declares,
+            // discovered live via getJobParameters) go first so a job's own parameter wins
+            // if it happens to share a name with one of the fixed ones below; the EnvPilot
+            // bookkeeping fields are stamped last, unconditionally, so they can never be
+            // overridden by a same-named dynamic parameter. Skipped entirely for a
+            // non-parameterized job - Jenkins has nowhere to map them since /build (unlike
+            // /buildWithParameters) doesn't accept form parameters at all.
             MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-            String envToSend = (envName != null && !envName.isEmpty()) ? envName : environment.getName();
-            parameters.add("ENV", envToSend);
-            parameters.add("VERSION", version != null ? version : "latest");
-            parameters.add("PROJECT_ID", project.getId().toString());
-            parameters.add("PROJECT_NAME", project.getName());
-            parameters.add("TRIGGERED_BY_USER_ID", triggeredBy.getId().toString());
-            parameters.add("TRIGGERED_BY_USER_NAME", triggeredBy.getName());
-            parameters.add("TRIGGERED_BY_USER_EMAIL", triggeredBy.getEmail());
-            if (notes != null && !notes.trim().isEmpty()) {
-                parameters.add("NOTES", notes);
+            if (isParameterized) {
+                if (extraParameters != null) {
+                    for (Map.Entry<String, String> entry : extraParameters.entrySet()) {
+                        if (entry.getKey() != null && entry.getValue() != null) {
+                            parameters.add(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+                String envToSend = (envName != null && !envName.isEmpty()) ? envName : (environment != null ? environment.getName() : null);
+                if (envToSend != null && !envToSend.isEmpty() && !parameters.containsKey("ENV")) {
+                    parameters.add("ENV", envToSend);
+                }
+                if (version != null && !version.trim().isEmpty() && !parameters.containsKey("VERSION")) {
+                    parameters.add("VERSION", version);
+                }
+                if (notes != null && !notes.trim().isEmpty() && !parameters.containsKey("NOTES")) {
+                    parameters.add("NOTES", notes);
+                }
+                if (branch != null && !branch.trim().isEmpty()) {
+                    // The Jenkins job may declare its Git Parameter branch field under any name
+                    // (the "pay-channel-non-sit" job uses "Branch"), so look up the real name
+                    // rather than assuming one; fall back to "Branch" if it can't be discovered.
+                    String branchParamName = findGitBranchParameterName(project);
+                    parameters.set(branchParamName != null ? branchParamName : "Branch", branch);
+                }
+                parameters.set("PROJECT_ID", project.getId().toString());
+                parameters.set("PROJECT_NAME", project.getName());
+                parameters.set("TRIGGERED_BY_USER_ID", triggeredBy.getId().toString());
+                parameters.set("TRIGGERED_BY_USER_NAME", triggeredBy.getName());
+                parameters.set("TRIGGERED_BY_USER_EMAIL", triggeredBy.getEmail());
             }
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(parameters, headers);
@@ -581,6 +600,292 @@ public class JenkinsService {
         }
 
         return result;
+    }
+
+    /**
+     * Get available branches for the job's Git Parameter field (Git Parameter plugin), if any.
+     * Returns success=true with an empty branch list when the job has no such parameter,
+     * so callers can treat "no branch field" and "no branches found" the same way.
+     */
+    public Map<String, Object> getGitBranches(Project project) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            if (!isJenkinsConfigured(project)) {
+                result.put("success", false);
+                result.put("message", "Jenkins configuration is incomplete");
+                return result;
+            }
+
+            String paramName = findGitBranchParameterName(project);
+            if (paramName == null) {
+                result.put("success", true);
+                result.put("branchParameterName", null);
+                result.put("branches", new ArrayList<String>());
+                return result;
+            }
+
+            String jenkinsUrl = normalizeJenkinsUrl(project.getJenkinsUrl());
+            String fillUrl = jenkinsUrl + "job/" + project.getJenkinsJobName()
+                + "/descriptorByName/net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition/fillValueItems?param="
+                + java.net.URLEncoder.encode(paramName, StandardCharsets.UTF_8);
+            System.out.println("🔍 Fetching branch choices: " + fillUrl);
+
+            // The Git Parameter plugin guards fillValueItems with @POST (it triggers a git
+            // ls-remote under the hood), so it needs a CSRF crumb and a POST, unlike the
+            // plain read-only GET used to discover the parameter name above. Some Jenkins
+            // setups (e.g. behind a reverse proxy) also enforce a same-origin check on top
+            // of the crumb, so send Origin/Referer matching what the job's own build page
+            // would send, the same way the browser does.
+            HttpHeaders headers = buildAuthHeaders(project);
+            addCrumb(project, headers);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set(HttpHeaders.ORIGIN, jenkinsOrigin(jenkinsUrl));
+            headers.set(HttpHeaders.REFERER, jenkinsUrl + "job/" + project.getJenkinsJobName() + "/build?delay=0sec");
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            List<String> branches = new ArrayList<>();
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(fillUrl, HttpMethod.POST, request, String.class);
+                System.out.println("   Response status: " + response.getStatusCode());
+                System.out.println("   Response body: " + response.getBody());
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    JsonNode values = objectMapper.readTree(response.getBody()).get("values");
+                    if (values != null && values.isArray()) {
+                        for (JsonNode v : values) {
+                            String value = v.has("value") ? v.get("value").asText() : v.path("name").asText(null);
+                            if (value != null) {
+                                branches.add(value);
+                            }
+                        }
+                    }
+                }
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                // RestTemplate throws on non-2xx before we can log the body above, so surface
+                // it here instead; Jenkins usually explains CSRF/permission failures in it.
+                System.out.println("❌ fillValueItems failed. Status: " + e.getStatusCode() + ", body: " + e.getResponseBodyAsString());
+                throw e;
+            }
+            System.out.println("   Parsed " + branches.size() + " branch(es)");
+
+            result.put("success", true);
+            result.put("branchParameterName", paramName);
+            result.put("branches", branches);
+        } catch (Exception e) {
+            System.out.println("❌ Error getting Git branches: " + e.getMessage());
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "Error getting Git branches: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Find the name of the job's Git Parameter branch field (Git Parameter plugin), by
+     * inspecting the job's parameter definitions for one backed by that plugin. Returns
+     * null if the job isn't configured with one, or if it can't be reached.
+     */
+    private String findGitBranchParameterName(Project project) {
+        for (JsonNode paramDef : fetchParameterDefinitions(project)) {
+            String klass = paramDef.path("_class").asText("");
+            String type = paramDef.path("type").asText("");
+            if (classifyParameterType(klass, type) == JenkinsParameterType.GIT_PARAMETER) {
+                return paramDef.path("name").asText(null);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get every parameter the job's build form declares (Git Parameter, String, Text,
+     * Boolean, Choice, Password, or otherwise), so callers can render/submit a form that
+     * matches whatever a given Jenkins job actually needs instead of a fixed field set.
+     */
+    public Map<String, Object> getJobParameters(Project project) {
+        Map<String, Object> result = new HashMap<>();
+
+        if (!isJenkinsConfigured(project)) {
+            result.put("success", false);
+            result.put("message", "Jenkins configuration is incomplete");
+            return result;
+        }
+
+        List<Map<String, Object>> parameters = new ArrayList<>();
+        for (JsonNode paramDef : fetchParameterDefinitions(project)) {
+            String klass = paramDef.path("_class").asText("");
+            String type = paramDef.path("type").asText("");
+            JenkinsParameterType paramType = classifyParameterType(klass, type);
+
+            Map<String, Object> param = new HashMap<>();
+            param.put("name", paramDef.path("name").asText(null));
+            param.put("type", paramType.name());
+            param.put("description", paramDef.hasNonNull("description") ? paramDef.path("description").asText() : null);
+
+            // Jenkins returns an encrypted Secret blob for a password parameter's default,
+            // not a usable plaintext value - never surface it.
+            if (paramType == JenkinsParameterType.PASSWORD) {
+                param.put("defaultValue", null);
+            } else {
+                JsonNode defaultValue = paramDef.path("defaultParameterValue").path("value");
+                param.put("defaultValue", defaultValue.isMissingNode() || defaultValue.isNull() ? null : defaultValue.asText());
+            }
+
+            if (paramType == JenkinsParameterType.CHOICE && paramDef.path("choices").isArray()) {
+                List<String> choices = new ArrayList<>();
+                for (JsonNode choice : paramDef.path("choices")) {
+                    choices.add(choice.asText());
+                }
+                param.put("choices", choices);
+            } else {
+                param.put("choices", null);
+            }
+
+            parameters.add(param);
+        }
+
+        result.put("success", true);
+        result.put("parameters", parameters);
+        return result;
+    }
+
+    private enum JenkinsParameterType {
+        GIT_PARAMETER, STRING, TEXT, BOOLEAN, CHOICE, PASSWORD, UNKNOWN
+    }
+
+    private JenkinsParameterType classifyParameterType(String klass, String type) {
+        String k = klass.toLowerCase();
+        String t = type.toLowerCase();
+        if (k.contains("gitparameterdefinition") || t.contains("gitparameter")) {
+            return JenkinsParameterType.GIT_PARAMETER;
+        } else if (k.contains("booleanparameterdefinition") || t.contains("boolean")) {
+            return JenkinsParameterType.BOOLEAN;
+        } else if (k.contains("choiceparameterdefinition") || t.contains("choice")) {
+            return JenkinsParameterType.CHOICE;
+        } else if (k.contains("passwordparameterdefinition") || t.contains("password")) {
+            return JenkinsParameterType.PASSWORD;
+        } else if (k.contains("textparameterdefinition") || t.contains("text")) {
+            return JenkinsParameterType.TEXT;
+        } else if (k.contains("stringparameterdefinition") || t.contains("string")) {
+            return JenkinsParameterType.STRING;
+        }
+        return JenkinsParameterType.UNKNOWN;
+    }
+
+    /**
+     * Fetch the job's raw parameter definitions in one call. Freestyle jobs expose
+     * ParametersDefinitionProperty under "actions"; Pipeline and multibranch jobs commonly
+     * expose it under "property" instead - query both so parameters are found regardless
+     * of job type. Returns an empty list if the job can't be reached or has none.
+     */
+    private List<JsonNode> fetchParameterDefinitions(Project project) {
+        List<JsonNode> definitions = new ArrayList<>();
+        try {
+            String jenkinsUrl = normalizeJenkinsUrl(project.getJenkinsUrl());
+            String url = jenkinsUrl + "job/" + project.getJenkinsJobName()
+                + "/api/json?tree=actions[parameterDefinitions[name,type,_class,description,defaultParameterValue[value],choices]],"
+                + "property[parameterDefinitions[name,type,_class,description,defaultParameterValue[value],choices]]";
+            System.out.println("🔍 Looking up Jenkins job parameters: " + url);
+            HttpEntity<String> request = new HttpEntity<>(buildAuthHeaders(project));
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("⚠️ Failed to fetch job parameters. Status: " + response.getStatusCode());
+                return definitions;
+            }
+
+            // Jenkins can expose the same ParametersDefinitionProperty under both "actions"
+            // and "property" for the same job (observed on Freestyle jobs), so dedupe by
+            // parameter name rather than assuming each key contributes distinct parameters.
+            JsonNode jobInfo = objectMapper.readTree(response.getBody());
+            Set<String> seenNames = new HashSet<>();
+            for (String key : new String[] {"actions", "property"}) {
+                JsonNode entries = jobInfo.get(key);
+                if (entries == null) {
+                    continue;
+                }
+                for (JsonNode entry : entries) {
+                    JsonNode paramDefs = entry.get("parameterDefinitions");
+                    if (paramDefs == null) {
+                        continue;
+                    }
+                    for (JsonNode paramDef : paramDefs) {
+                        String name = paramDef.path("name").asText("");
+                        if (!seenNames.add(name)) {
+                            continue;
+                        }
+                        System.out.println("   Found parameter: " + name
+                            + " (_class=" + paramDef.path("_class").asText("") + ", type=" + paramDef.path("type").asText("") + ")");
+                        definitions.add(paramDef);
+                    }
+                }
+            }
+            if (definitions.isEmpty()) {
+                System.out.println("⚠️ No parameters found on job: " + project.getJenkinsJobName());
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not discover job parameters: " + e.getMessage());
+        }
+        return definitions;
+    }
+
+    private String normalizeJenkinsUrl(String jenkinsUrl) {
+        return jenkinsUrl.endsWith("/") ? jenkinsUrl : jenkinsUrl + "/";
+    }
+
+    /**
+     * Derive the Origin header value (scheme://host[:port], no path) from a normalized
+     * Jenkins base URL, for requests that need to look like they came from the Jenkins UI.
+     */
+    private String jenkinsOrigin(String normalizedJenkinsUrl) {
+        java.net.URI uri = java.net.URI.create(normalizedJenkinsUrl);
+        String origin = uri.getScheme() + "://" + uri.getHost();
+        if (uri.getPort() != -1) {
+            origin += ":" + uri.getPort();
+        }
+        return origin;
+    }
+
+    private HttpHeaders buildAuthHeaders(Project project) {
+        HttpHeaders headers = new HttpHeaders();
+        String auth = project.getJenkinsUsername() + ":" + project.getJenkinsToken();
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+        headers.set("Authorization", "Basic " + encodedAuth);
+        return headers;
+    }
+
+    /**
+     * Fetch a CSRF crumb from Jenkins and add it to the given headers, needed for
+     * POST requests when CSRF protection is enabled. Some Jenkins instances validate
+     * the crumb against the session it was issued under (not just the Basic Auth
+     * identity), so the crumb-issuing response's session cookie is captured and
+     * forwarded too - otherwise a session-tied crumb check fails with "No valid
+     * crumb was included in the request" even though the crumb value itself is
+     * correct. Returns false (headers left unchanged) if the crumb can't be obtained.
+     */
+    private boolean addCrumb(Project project, HttpHeaders headers) {
+        try {
+            String jenkinsUrl = normalizeJenkinsUrl(project.getJenkinsUrl());
+            String crumbUrl = jenkinsUrl + "crumbIssuer/api/json";
+            HttpEntity<String> crumbRequest = new HttpEntity<>(buildAuthHeaders(project));
+            ResponseEntity<String> crumbResponse = restTemplate.exchange(crumbUrl, HttpMethod.GET, crumbRequest, String.class);
+            if (crumbResponse.getStatusCode().is2xxSuccessful()) {
+                JsonNode crumbJson = objectMapper.readTree(crumbResponse.getBody());
+                headers.set(crumbJson.get("crumbRequestField").asText(), crumbJson.get("crumb").asText());
+
+                List<String> setCookies = crumbResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+                if (setCookies != null && !setCookies.isEmpty()) {
+                    String cookieHeader = setCookies.stream()
+                        .map(setCookie -> setCookie.split(";", 2)[0])
+                        .collect(Collectors.joining("; "));
+                    headers.set(HttpHeaders.COOKIE, cookieHeader);
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ Could not fetch Jenkins crumb: " + e.getMessage());
+        }
+        return false;
     }
 
     /**

@@ -65,6 +65,14 @@ public class DeploymentHistory {
         PENDING, IN_PROGRESS, SUCCESS, FAILED, CANCELLED
     }
 
+    /**
+     * Environment is optional (a project can opt out of requiring one) - use this instead
+     * of {@code getEnvironment().getName()} anywhere that isn't already null-guarded.
+     */
+    public String getEnvironmentNameOrDefault() {
+        return environment != null ? environment.getName() : "N/A";
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

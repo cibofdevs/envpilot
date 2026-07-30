@@ -62,6 +62,10 @@ public class Project {
     @Column(name = "jenkins_token")
     private String jenkinsToken;
 
+    @Schema(description = "Whether deploying this project requires selecting an EnvPilot Environment (dev/staging/production). Some Jenkins jobs have no environment concept at all.", example = "true")
+    @Column(name = "require_environment_selection", columnDefinition = "boolean default true")
+    private boolean requireEnvironmentSelection = true;
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Environment> environments;

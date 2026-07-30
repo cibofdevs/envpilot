@@ -111,6 +111,7 @@ public class JenkinsController {
             @Parameter(description = "Environment ID", example = "1") @RequestParam Long environmentId,
             @Parameter(description = "Version to deploy", example = "1.0.0") @RequestParam(required = false) String version,
             @Parameter(description = "Deployment notes", example = "Production deployment") @RequestParam(required = false) String notes,
+            @Parameter(description = "Git branch/ref to deploy", example = "origin/main") @RequestParam(required = false) String branch,
             Authentication authentication) {
 
         Optional<Project> projectOpt = projectService.getProjectById(projectId);
@@ -166,7 +167,9 @@ public class JenkinsController {
             environmentOpt.get(),
             version,
             notes,
+            branch,
             environmentOpt.get().getName(),
+            null,
             currentUser
         );
 
@@ -288,6 +291,9 @@ public class JenkinsController {
         if (jenkinsConfig.containsKey("jenkinsToken")) {
             project.setJenkinsToken(jenkinsConfig.get("jenkinsToken"));
         }
+        if (jenkinsConfig.containsKey("requireEnvironmentSelection")) {
+            project.setRequireEnvironmentSelection(Boolean.parseBoolean(jenkinsConfig.get("requireEnvironmentSelection")));
+        }
 
         Project updatedProject = projectService.updateProject(project);
 
@@ -370,6 +376,107 @@ public class JenkinsController {
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
             }
+        }
+    }
+
+    /**
+     * Get available Git branches for a project's Jenkins job, if its build is configured
+     * with a Git Parameter branch field (e.g. via the Git Parameter plugin).
+     */
+    @GetMapping("/branches/{projectId}")
+    public ResponseEntity<Map<String, Object>> getGitBranches(@PathVariable Long projectId, Authentication authentication) {
+        Optional<Project> projectOpt = projectService.getProjectById(projectId);
+
+        if (projectOpt.isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Project not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        // Check user access to project
+        Project project = projectOpt.get();
+        UserDetailsServiceImpl.UserPrincipal userPrincipal = (UserDetailsServiceImpl.UserPrincipal) authentication.getPrincipal();
+        User.Role userRole = userPrincipal.getAuthorities().stream()
+            .map(authority -> {
+                String roleName = authority.getAuthority().replace("ROLE_", "");
+                return User.Role.valueOf(roleName);
+            })
+            .findFirst()
+            .orElse(User.Role.DEVELOPER);
+
+        // Admin can access all projects
+        if (userRole != User.Role.ADMIN) {
+            Long userId = userPrincipal.getId();
+            List<Project> userProjects = projectRepository.findProjectsByUserId(userId);
+            boolean hasAccess = userProjects.stream()
+                .anyMatch(userProject -> userProject.getId().equals(projectId));
+
+            if (!hasAccess) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "Access denied. You don't have permission to access this project's branches.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+        }
+
+        Map<String, Object> result = jenkinsService.getGitBranches(project);
+
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    /**
+     * Get every parameter a project's Jenkins job declares (Git Parameter, String, Text,
+     * Boolean, Choice, Password, etc.), so the deploy form can render exactly what that
+     * job needs instead of a fixed field set.
+     */
+    @GetMapping("/parameters/{projectId}")
+    public ResponseEntity<Map<String, Object>> getJobParameters(@PathVariable Long projectId, Authentication authentication) {
+        Optional<Project> projectOpt = projectService.getProjectById(projectId);
+
+        if (projectOpt.isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Project not found");
+            return ResponseEntity.notFound().build();
+        }
+
+        // Check user access to project
+        Project project = projectOpt.get();
+        UserDetailsServiceImpl.UserPrincipal userPrincipal = (UserDetailsServiceImpl.UserPrincipal) authentication.getPrincipal();
+        User.Role userRole = userPrincipal.getAuthorities().stream()
+            .map(authority -> {
+                String roleName = authority.getAuthority().replace("ROLE_", "");
+                return User.Role.valueOf(roleName);
+            })
+            .findFirst()
+            .orElse(User.Role.DEVELOPER);
+
+        // Admin can access all projects
+        if (userRole != User.Role.ADMIN) {
+            Long userId = userPrincipal.getId();
+            List<Project> userProjects = projectRepository.findProjectsByUserId(userId);
+            boolean hasAccess = userProjects.stream()
+                .anyMatch(userProject -> userProject.getId().equals(projectId));
+
+            if (!hasAccess) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("success", false);
+                error.put("message", "Access denied. You don't have permission to access this project's parameters.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+        }
+
+        Map<String, Object> result = jenkinsService.getJobParameters(project);
+
+        if ((Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
         }
     }
 
@@ -461,6 +568,7 @@ public class JenkinsController {
         config.put("jenkinsUsername", project.getJenkinsUsername());
         // Don't return the token for security reasons
         config.put("hasJenkinsToken", project.getJenkinsToken() != null && !project.getJenkinsToken().trim().isEmpty());
+        config.put("requireEnvironmentSelection", project.isRequireEnvironmentSelection());
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);

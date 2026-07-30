@@ -249,7 +249,11 @@ export default function ProjectEnvironments({ project }) {
       const version = `1.0.0-${timestamp}`;
       
       // Send envName to backend so it can be forwarded to Jenkins
-      const response = await jenkinsAPI.deployProject(project.id, environmentId, version, `Quick deploy to ${envObj?.name}`, envObj?.name);
+      const response = await jenkinsAPI.deployProject(project.id, environmentId, {
+        version,
+        notes: `Quick deploy to ${envObj?.name}`,
+        envName: envObj?.name
+      });
       if (response.data.success) {
         // Save build info for real-time log
         if (response.data.buildNumber) {
