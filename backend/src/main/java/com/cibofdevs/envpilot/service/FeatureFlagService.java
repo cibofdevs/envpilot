@@ -35,21 +35,4 @@ public class FeatureFlagService {
         Map<String, Object> features = getFeatures();
         return features != null && Boolean.TRUE.equals(features.get("emailNotificationsEnabled"));
     }
-
-    public boolean isRealTimeMonitoringEnabled() {
-        Map<String, Object> features = getFeatures();
-        return features != null && Boolean.TRUE.equals(features.get("realTimeMonitoringEnabled"));
-    }
-
-    public void setAuditLoggingEnabled(boolean enabled) {
-        systemSettingService.updateFeatureFlag("auditLoggingEnabled", enabled);
-    }
-
-    public void setEmailNotificationsEnabled(boolean enabled) {
-        systemSettingService.updateFeatureFlag("emailNotificationsEnabled", enabled);
-    }
-
-    public void setRealTimeMonitoringEnabled(boolean enabled) {
-        systemSettingService.updateFeatureFlag("realTimeMonitoringEnabled", enabled);
-    }
-} 
+}

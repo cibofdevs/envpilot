@@ -185,12 +185,7 @@ export const settingsAPI = {
   // System settings (Admin only)
   getSystemSettings: () => api.get('/settings/system'),
   updateSystemSettings: (settings) => api.put('/settings/system', settings),
-  getSystemInfo: () => api.get('/settings/system-info'),
   getSystemMonitoring: () => api.get('/settings/system-monitoring'),
-  getFeatureFlags: () => api.get('/settings/feature-flags'),
-  toggleAuditLogging: (enabled) => api.post(`/settings/feature-flags/audit-logging?enabled=${enabled}`),
-  toggleEmailNotifications: (enabled) => api.post(`/settings/feature-flags/email-notifications?enabled=${enabled}`),
-  toggleRealTimeMonitoring: (enabled) => api.post(`/settings/feature-flags/real-time-monitoring?enabled=${enabled}`),
   // Additional to prevent errors
   getAppInfo: () => api.get('/settings/app-info'),
   getUserPreferences: () => api.get('/settings/preferences'),

@@ -190,12 +190,4 @@ public class SystemSettingService {
             saveSetting("database.backupEnabled", "true", "Enable database backup", "BOOLEAN");
         }
     }
-
-    /**
-     * Update a specific feature flag
-     */
-    public void updateFeatureFlag(String flagName, boolean enabled) {
-        saveSetting("features." + flagName, String.valueOf(enabled), 
-                   "Feature flag: " + flagName, "BOOLEAN");
-    }
-} 
+}
