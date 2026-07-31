@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { settingsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 
 const SystemSettings = () => {
-  const { isAdmin } = useAuth();
   const { updateAppName, updateAppVersion } = useApp();
-  useNavigate();
   const [settings, setSettings] = useState({
     appName: '',
     appVersion: '',
@@ -92,92 +88,8 @@ const SystemSettings = () => {
     );
   }
 
-  // Check if user is admin for Application Settings
-  const canEditApplicationSettings = isAdmin();
-
   return (
     <div className="space-y-6">
-      {/* Feature Flag Status Indicators */}
-      {!settings.features?.emailNotificationsEnabled && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Email Notifications Disabled
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                <p>Email notifications are currently disabled. Users will not receive email alerts for deployments and system events.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!settings.features?.userRegistrationEnabled && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                User Registration Disabled
-              </h3>
-              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
-                <p>User registration is currently disabled. New users cannot be created through the registration form or admin panel.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!settings.features?.analyticsEnabled && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-primary-800 dark:text-primary-200">
-                Analytics Disabled
-              </h3>
-              <div className="mt-2 text-sm text-primary-700 dark:text-primary-300">
-                <p>Analytics features are currently disabled. The analytics dashboard and related metrics are not accessible.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!settings.features?.auditLoggingEnabled && (
-        <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                Audit Logging Disabled
-              </h3>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                <p>Audit logging is currently disabled. System activities and security events are not being logged.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Success Message */}
       {success && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
@@ -208,14 +120,7 @@ const SystemSettings = () => {
 
       {/* Application Settings */}
       <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 border border-gray-200 dark:border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Application Settings</h3>
-          {!canEditApplicationSettings && (
-            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-white/10 px-2 py-1 rounded">
-              Admin Only
-            </span>
-          )}
-        </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Application Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -225,10 +130,7 @@ const SystemSettings = () => {
               type="text"
               value={settings.appName}
               onChange={(e) => handleApplicationSettingChange('appName', e.target.value)}
-              disabled={!canEditApplicationSettings}
-              className={`input-field ${
-                !canEditApplicationSettings ? 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed' : ''
-              }`}
+              className="input-field"
               placeholder="Enter application name"
             />
           </div>
@@ -240,32 +142,16 @@ const SystemSettings = () => {
               type="text"
               value={settings.appVersion}
               onChange={(e) => handleApplicationSettingChange('appVersion', e.target.value)}
-              disabled={!canEditApplicationSettings}
-              className={`input-field ${
-                !canEditApplicationSettings ? 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed' : ''
-              }`}
+              className="input-field"
               placeholder="e.g., v1.0.0"
             />
           </div>
         </div>
-        {!canEditApplicationSettings && (
-          <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-md">
-            <p className="text-sm text-primary-800 dark:text-primary-200">
-              <strong>Note:</strong> Application settings can only be modified by administrators. 
-              Contact your system administrator to make changes to these settings.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Feature Flags */}
       <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-6 border border-gray-200 dark:border-white/10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Feature Flags</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-white/10 px-2 py-1 rounded">
-            System Level
-          </span>
-        </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Feature Flags</h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           These settings control system-wide features and affect all users in the application.
         </p>
