@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { 
-  UserIcon, 
-  CalendarIcon, 
-  ClockIcon, 
-  PencilIcon, 
+import {
+  UserIcon,
+  CalendarIcon,
+  ClockIcon,
+  PencilIcon,
   TrashIcon,
   XMarkIcon,
   ExclamationTriangleIcon
@@ -29,36 +29,6 @@ export default function ProjectOverview({ project, onUpdate }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // State for statistics data
-  const [environments, setEnvironments] = useState([]);
-  const [deployments, setDeployments] = useState([]);
-  const [loadingStats, setLoadingStats] = useState(true);
-
-  const fetchProjectStats = useCallback(async () => {
-    setLoadingStats(true);
-    try {
-      // Fetch environments and deployments in parallel
-      const [environmentsResponse, deploymentsResponse] = await Promise.all([
-        projectsAPI.getEnvironments(project.id),
-        projectsAPI.getDeployments(project.id)
-      ]);
-      setEnvironments(environmentsResponse.data);
-      setDeployments(deploymentsResponse.data);
-    } catch (error) {
-      console.error('Error fetching project stats:', error);
-      setError('Failed to load project statistics');
-    } finally {
-      setLoadingStats(false);
-    }
-  }, [project.id]);
-
-  // Fetch environments and deployments when component mounts or project changes
-  useEffect(() => {
-    if (project?.id) {
-      fetchProjectStats();
-    }
-  }, [project?.id, fetchProjectStats]);
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -192,40 +162,6 @@ export default function ProjectOverview({ project, onUpdate }) {
               </p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            {loadingStats ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-            ) : (
-              environments.length
-            )}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Environments</div>
-        </div>
-        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            {loadingStats ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-            ) : (
-              deployments.length
-            )}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Deployments</div>
-        </div>
-        <div className="card p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300 text-center">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-            {loadingStats ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
-            ) : (
-              environments.filter(env => env.status === 'ONLINE').length
-            )}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Online Environments</div>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
@@ -29,19 +29,70 @@ export default function ProjectsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
     status: 'ACTIVE'
   });
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    description: '',
+    status: 'ACTIVE'
+  });
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
   const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  // "/projects/new" (e.g. from the dashboard quick action) opens straight into
+  // the create modal instead of a separate page.
+  useEffect(() => {
+    if (location.pathname === '/projects/new' && isAdmin()) {
+      setShowCreateModal(true);
+    }
+  }, [location.pathname, isAdmin]);
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setCreateForm({ name: '', description: '', status: 'ACTIVE' });
+    setCreateError(null);
+    if (location.pathname === '/projects/new') {
+      navigate('/projects', { replace: true });
+    }
+  };
+
+  const handleCreateInputChange = (e) => {
+    const { name, value } = e.target;
+    setCreateForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    setCreateLoading(true);
+    setCreateError(null);
+
+    try {
+      const response = await projectsAPI.create(createForm);
+      navigate(`/projects/${response.data.id}`);
+    } catch (error) {
+      console.error('Error creating project:', error);
+      setCreateError(error.response?.data?.message || 'Failed to create project. Please try again.');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -149,13 +200,13 @@ export default function ProjectsList() {
           </p>
         </div>
         {isAdmin() && (
-          <Link
-            to="/projects/new"
+          <button
+            onClick={() => setShowCreateModal(true)}
             className="btn-primary inline-flex items-center"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             New Project
-          </Link>
+          </button>
         )}
       </div>
 
@@ -206,13 +257,13 @@ export default function ProjectsList() {
           </p>
           {!searchTerm && isAdmin() && (
             <div className="mt-6 flex justify-center">
-              <Link
-                to="/projects/new"
+              <button
+                onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 New Project
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -284,6 +335,99 @@ export default function ProjectsList() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <ModalPortal>
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+            <div className="card relative top-20 mx-auto p-6 w-96">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Create New Project</h3>
+                <button
+                  onClick={closeCreateModal}
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              {createError && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg">
+                  {createError}
+                </div>
+              )}
+
+              <form onSubmit={handleCreateSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="create-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Project Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="create-name"
+                    name="name"
+                    value={createForm.name}
+                    onChange={handleCreateInputChange}
+                    className="input-field"
+                    placeholder="Enter project name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="create-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    id="create-description"
+                    name="description"
+                    value={createForm.description}
+                    onChange={handleCreateInputChange}
+                    rows={3}
+                    className="input-field"
+                    placeholder="Enter project description..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="create-status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Status
+                  </label>
+                  <select
+                    id="create-status"
+                    name="status"
+                    value={createForm.status}
+                    onChange={handleCreateInputChange}
+                    className="input-field"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeCreateModal}
+                    className="btn-secondary"
+                    disabled={createLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={createLoading || !createForm.name.trim()}
+                  >
+                    {createLoading ? 'Creating...' : 'Create Project'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </ModalPortal>
       )}
 
       {/* Edit Modal */}

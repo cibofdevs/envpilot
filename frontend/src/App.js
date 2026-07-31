@@ -11,7 +11,6 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import ProjectsList from './components/Projects/ProjectsList';
 import ProjectDetail from './components/Projects/ProjectDetail';
-import ProjectForm from './components/Projects/ProjectForm';
 import AnalyticsDashboard from './components/Analytics/AnalyticsDashboard';
 import UsersDashboard from './components/Users/UsersDashboard';
 import SettingsDashboard from './components/Settings/SettingsDashboard';
@@ -106,7 +105,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Layout>
-              <ProjectForm />
+              <ProjectsList />
             </Layout>
           </ProtectedRoute>
         }

@@ -461,7 +461,16 @@ const ProjectDeployments = ({ projectId }) => {
     if (!projectId) return;
     try {
       setRefreshing(true);
-      
+
+      // Reconnect the WebSocket first if it dropped
+      if (!wsConnection.current || !wsConnection.current.connected) {
+        console.log('🔄 WebSocket not connected, reconnecting...');
+        if (wsConnection.current) {
+          wsConnection.current.deactivate();
+        }
+        initWebSocket();
+      }
+
       // Force sync all deployments from Jenkins first
       console.log('🔄 Force syncing all deployments from Jenkins...');
       await jenkinsAPI.syncAllDeployments();
@@ -765,28 +774,10 @@ const ProjectDeployments = ({ projectId }) => {
             onClick={handleRefresh}
             disabled={refreshing}
             className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
-            title="Refresh deployment history"
+            title="Refresh deployment history (also reconnects if disconnected)"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
-          <button
-            onClick={() => {
-              console.log('🔄 Manual WebSocket reconnect requested');
-              if (wsConnection.current) {
-                wsConnection.current.deactivate();
-                setTimeout(() => {
-                  initWebSocket();
-                }, 1000);
-              } else {
-                initWebSocket();
-              }
-            }}
-            className="inline-flex items-center px-3 py-1.5 text-sm bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors"
-            title="Reconnect WebSocket"
-          >
-            <ArrowPathIcon className="h-4 w-4 mr-1" />
-            Reconnect
           </button>
         </div>
       </div>

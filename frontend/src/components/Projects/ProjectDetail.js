@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Tab } from '@headlessui/react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { HomeIcon, ServerIcon, DocumentTextIcon, Cog6ToothIcon, RocketLaunchIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ServerIcon, DocumentTextIcon, RocketLaunchIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { projectsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import ProjectOverview from './ProjectOverview';
 import ProjectEnvironments from './ProjectEnvironments';
 import ProjectDeployments from './ProjectDeployments';
-import JenkinsConfig from './JenkinsConfig';
-import JenkinsDeployment from './JenkinsDeployment';
+import JenkinsPanel from './JenkinsPanel';
 import ProjectAssignments from './ProjectAssignments';
 import StatusBadge from '../Common/StatusBadge';
 
@@ -65,8 +64,7 @@ export default function ProjectDetail() {
     { name: 'Environments', component: ProjectEnvironments },
     { name: 'Deployments', component: ProjectDeployments },
     { name: 'Assignments', component: ProjectAssignments, adminOnly: true },
-    { name: 'Jenkins Config', component: JenkinsConfig, adminOnly: true },
-    { name: 'Jenkins Deploy', component: JenkinsDeployment, adminOnly: true },
+    { name: 'Jenkins', component: JenkinsPanel, adminOnly: true },
   ];
 
   // Filter tabs based on user role
@@ -114,8 +112,7 @@ export default function ProjectDetail() {
               {tab.name === 'Environments' && <ServerIcon className="h-4 w-4" />}
               {tab.name === 'Deployments' && <DocumentTextIcon className="h-4 w-4" />}
               {tab.name === 'Assignments' && <UsersIcon className="h-4 w-4" />}
-              {tab.name === 'Jenkins Config' && <Cog6ToothIcon className="h-4 w-4" />}
-              {tab.name === 'Jenkins Deploy' && <RocketLaunchIcon className="h-4 w-4" />}
+              {tab.name === 'Jenkins' && <RocketLaunchIcon className="h-4 w-4" />}
               {tab.name}
             </Tab>
           ))}
