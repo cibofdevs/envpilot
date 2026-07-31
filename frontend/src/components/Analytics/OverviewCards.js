@@ -1,11 +1,11 @@
 import React from 'react';
-import { FolderIcon, GlobeAltIcon, RocketLaunchIcon, UsersIcon, FlagIcon, Cog6ToothIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { FolderIcon, GlobeAltIcon, RocketLaunchIcon, UsersIcon, FlagIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 
 const OverviewCards = ({ data }) => {
   if (!data) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[...Array(8)].map((_, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {[...Array(6)].map((_, i) => (
           <div key={i} className="card p-4 sm:p-6 animate-pulse">
             <div className="h-4 bg-gray-200 dark:bg-white/10 rounded w-3/4 mb-2"></div>
             <div className="h-8 bg-gray-200 dark:bg-white/10 rounded w-1/2"></div>
@@ -63,22 +63,6 @@ const OverviewCards = ({ data }) => {
       changeLabel: 'recent',
       icon: Cog6ToothIcon,
       color: 'gray'
-    },
-    {
-      title: 'Success Rate',
-      value: `${data.deploymentSuccessRate || 0}%`,
-      change: data.successfulDeployments,
-      changeLabel: 'successful',
-      icon: CheckCircleIcon,
-      color: 'green'
-    },
-    {
-      title: 'Failed Deployments',
-      value: data.failedDeployments || 0,
-      change: data.failureRate ? `${data.failureRate}%` : '0%',
-      changeLabel: 'failure rate',
-      icon: XCircleIcon,
-      color: 'red'
     }
   ];
 
@@ -96,7 +80,7 @@ const OverviewCards = ({ data }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {cards.map((card, index) => (
         <div key={index} className="card p-4 sm:p-6 hover:shadow-lg dark:hover:shadow-glow transition-all duration-300">
           <div className="flex items-center justify-between">

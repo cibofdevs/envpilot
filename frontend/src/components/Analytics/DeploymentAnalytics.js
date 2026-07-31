@@ -99,9 +99,9 @@ const DeploymentAnalytics = ({ data }) => {
               <div key={name} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${
-                    name === 'successful' ? 'bg-green-500' :
+                    name === 'success' ? 'bg-green-500' :
                     name === 'failed' ? 'bg-red-500' :
-                    name === 'pending' ? 'bg-yellow-500' :
+                    name === 'pending' || name === 'in_progress' ? 'bg-yellow-500' :
                     'bg-primary-500'
                   }`}></div>
                   <span className="text-sm text-gray-900 dark:text-gray-100 capitalize">
@@ -129,12 +129,11 @@ const DeploymentAnalytics = ({ data }) => {
     totalDeployments = 0,
     successfulDeployments = 0,
     failedDeployments = 0,
-    successRate = 0,
+    deploymentSuccessRate: successRate = 0,
     failureRate = 0,
     averageDeploymentsPerDay = 0,
     deploymentsByEnvironment = {},
-    deploymentsByStatus = {},
-    recentDeployments = []
+    deploymentStatusDistribution: deploymentsByStatus = {}
   } = data;
 
   return (
@@ -183,49 +182,6 @@ const DeploymentAnalytics = ({ data }) => {
           {renderPieChart(deploymentsByStatus, 'Deployments by Status')}
         </div>
       </div>
-
-      {/* Recent Deployments */}
-      {recentDeployments && recentDeployments.length > 0 && (
-        <div className="card p-6">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Recent Deployments</h4>
-          <div className="space-y-3">
-            {recentDeployments.slice(0, 10).map((deployment, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    deployment.status === 'SUCCESS' ? 'bg-green-500' :
-                    deployment.status === 'FAILED' ? 'bg-red-500' :
-                    'bg-yellow-500'
-                  }`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {deployment.projectName || 'Unknown Project'}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {deployment.environment?.name || 'Unknown Environment'}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`text-sm font-medium capitalize ${
-                    deployment.status === 'SUCCESS' ? 'text-green-600 dark:text-green-400' :
-                    deployment.status === 'FAILED' ? 'text-red-600 dark:text-red-400' :
-                    'text-yellow-600 dark:text-yellow-400'
-                  }`}>
-                    {deployment.status?.toLowerCase() || 'unknown'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {deployment.timestamp ? 
-                      new Date(deployment.timestamp).toLocaleString() : 
-                      'Unknown time'
-                    }
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

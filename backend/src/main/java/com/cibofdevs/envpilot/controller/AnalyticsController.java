@@ -222,13 +222,20 @@ public class AnalyticsController {
         double avgDeploymentsPerDay = totalDeployments / (double) days;
         analytics.put("averageDeploymentsPerDay", Math.round(avgDeploymentsPerDay * 100.0) / 100.0);
         
-        // Success rate
+        // Success / failure rate
         long successfulDeployments = recentDeployments.stream()
             .filter(d -> d.getStatus() == DeploymentHistory.Status.SUCCESS)
             .count();
+        long failedDeployments = recentDeployments.stream()
+            .filter(d -> d.getStatus() == DeploymentHistory.Status.FAILED)
+            .count();
         double successRate = totalDeployments > 0 ? (successfulDeployments / (double) totalDeployments) * 100 : 0;
+        double failureRate = totalDeployments > 0 ? (failedDeployments / (double) totalDeployments) * 100 : 0;
         analytics.put("deploymentSuccessRate", Math.round(successRate * 100.0) / 100.0);
-        
+        analytics.put("successfulDeployments", successfulDeployments);
+        analytics.put("failedDeployments", failedDeployments);
+        analytics.put("failureRate", Math.round(failureRate * 100.0) / 100.0);
+
         return ResponseEntity.ok(analytics);
     }
 

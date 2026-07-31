@@ -17,9 +17,9 @@ const EnvironmentMetrics = ({ data }) => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'active': return 'bg-green-500';
-      case 'inactive': return 'bg-gray-500';
-      case 'maintenance': return 'bg-yellow-500';
+      case 'online': return 'bg-green-500';
+      case 'offline': return 'bg-gray-500';
+      case 'deploying': return 'bg-yellow-500';
       case 'error': return 'bg-red-500';
       default: return 'bg-primary-500';
     }
@@ -133,12 +133,19 @@ const EnvironmentMetrics = ({ data }) => {
   const {
     totalEnvironments = 0,
     activeEnvironments = 0,
-    environmentStatusDistribution = {},
-    environmentsByProject = {},
-    healthOverview = {},
+    statusDistribution: environmentStatusDistribution = {},
+    environmentsPerProject: environmentsByProject = {},
+    environmentHealth = {},
     totalFeatureFlags = 0,
     enabledFeatureFlags = 0
   } = data;
+
+  // Backend doesn't compute a single "average health" figure, so derive one
+  // from the per-environment success rates already returned.
+  const healthValues = Object.values(environmentHealth).map((h) => h.successRate || 0);
+  const averageHealth = healthValues.length > 0
+    ? Math.round((healthValues.reduce((sum, v) => sum + v, 0) / healthValues.length) * 100) / 100
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -160,7 +167,7 @@ const EnvironmentMetrics = ({ data }) => {
         )}
         {renderMetricCard(
           'Health Score',
-          `${healthOverview.averageHealth || 0}%`,
+          `${averageHealth}%`,
           'Average health',
           <ChartBarIcon className="h-6 w-6" />,
           'purple'
@@ -190,9 +197,9 @@ const EnvironmentMetrics = ({ data }) => {
       {/* Environment Health Overview */}
       <div className="card p-4 sm:p-6">
         <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">Environment Health Overview</h4>
-        {data.environmentHealth && Object.keys(data.environmentHealth).length > 0 ? (
+        {Object.keys(environmentHealth).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(data.environmentHealth).map(([envName, health]) => (
+            {Object.entries(environmentHealth).map(([envName, health]) => (
               <div key={envName} className="p-3 sm:p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h5 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm sm:text-base" title={envName}>
@@ -210,12 +217,14 @@ const EnvironmentMetrics = ({ data }) => {
                     <span className="font-medium text-gray-900 dark:text-gray-100">{health.successRate || 0}%</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Response Time:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{health.avgResponseTime || 0}ms</span>
+                    <span className="text-gray-500 dark:text-gray-400">Deployments (30d):</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{health.totalDeployments || 0}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Uptime:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{health.uptime || 0}%</span>
+                    <span className="text-gray-500 dark:text-gray-400">Last Deployment:</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {health.lastDeployment ? new Date(health.lastDeployment).toLocaleDateString() : 'N/A'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -229,9 +238,6 @@ const EnvironmentMetrics = ({ data }) => {
           </div>
         )}
       </div>
-
-      {/* Feature Flag Usage */}
-
     </div>
   );
 };
